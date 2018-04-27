@@ -1,0 +1,40 @@
+#!/bin/bash
+
+set -eo pipefail
+
+goveralls_path="${GOPATH}/bin/goveralls"
+
+if [[ ! -x "${goveralls_path}" ]]; then
+    go get -u github.com/mattn/goveralls
+fi
+
+SOURCE_DIRECTORY=$(dirname "${BASH_SOURCE[0]}")
+cd "${SOURCE_DIRECTORY}/.."
+
+
+do_analyze() {
+
+    go test -covermode=count -coverprofile=coverage.out .
+
+}
+
+do_view() {
+
+    go tool cover -html=coverage.out
+
+}
+
+
+case "$1" in
+    --view)
+        do_view
+    ;;
+    --analyze)
+        do_analyze
+    ;;
+    *)
+        do_analyze
+        do_view
+    ;;
+esac
+exit 0
