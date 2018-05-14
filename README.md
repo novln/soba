@@ -12,7 +12,7 @@ A simple logger.
 
 ## Introduction
 
-
+> **NOTE:** Soba is still a work in progress, be advised.
 
 ## Versioning or Vendoring
 
