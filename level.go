@@ -10,7 +10,7 @@ type Level uint8
 const (
 	// UnknownLevel represents an unsupported level.
 	UnknownLevel = Level(iota)
-	// NoLevel is a no-op entries.
+	// NoLevel is a no-op entries: the logger is disabled.
 	NoLevel
 	// ErrorLevel logs are high-priority. If an application is running smoothly,
 	// no error should be generated.

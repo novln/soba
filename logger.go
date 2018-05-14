@@ -1,9 +1,5 @@
 package soba
 
-import (
-	"io"
-)
-
 // A Logger provides fast, leveled, structured logging.
 // All methods must be safe for concurrent use.
 type Logger interface {
@@ -17,8 +13,4 @@ type Logger interface {
 	Error(message string, fields ...Field)
 	// With clones the current Logger and append given structured context to it.
 	With(fields ...Field) Logger
-	// WithLevel clones the current Logger with the given level.
-	WithLevel(level Level) Logger
-	// WithOutput clones the current Logger with the given writer.
-	WithOutput(writer io.Writer) Logger
 }

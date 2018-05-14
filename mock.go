@@ -1,9 +1,5 @@
 package soba
 
-import (
-	"io"
-)
-
 // MockLogger is a mocked Logger which disable every operation.
 type MockLogger struct {
 }
@@ -35,15 +31,5 @@ func (MockLogger) Error(message string, fields ...Field) {
 
 // With is a no-op for MockLogger.
 func (MockLogger) With(fields ...Field) Logger {
-	return &MockLogger{}
-}
-
-// WithLevel is a no-op for MockLogger.
-func (MockLogger) WithLevel(level Level) Logger {
-	return &MockLogger{}
-}
-
-// WithOutput is a no-op for MockLogger.
-func (MockLogger) WithOutput(writer io.Writer) Logger {
 	return &MockLogger{}
 }
