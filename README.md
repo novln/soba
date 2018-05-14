@@ -45,8 +45,8 @@ Filters are associated with appenders and, like the name would suggest, filter l
 
 A log event is targeted at a specific logger, which are identified by string names.
 
-Loggers form a hierarchy: logger names are divided into components by `.`.
-One logger is the ancestor of another if the first logger's component list is a prefix of the second logger's
+Loggers form a hierarchy: logger names are divided into components by `.`:
+one logger is the ancestor of another if the first logger's component list is a prefix of the second logger's
 component list.
 
 Loggers are associated with a maximum log level. Log events for that logger with a level above the maximum will be

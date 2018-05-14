@@ -17,7 +17,7 @@ type Logger interface {
 	Warn(message string, fields ...Field)
 	// Error logs a message at ErrorLevel.
 	Error(message string, fields ...Field)
-	// With appends given structured field to it.
+	// With appends given structured fields to it.
 	With(fields ...Field) Logger
 }
 
