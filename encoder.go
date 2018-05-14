@@ -101,7 +101,6 @@ type ObjectEncoder interface {
 	AddBool(key string, value bool)
 	AddBools(key string, values []bool)
 	AddBinary(key string, value []byte)
-	AddRaw(key string, value interface{})
 }
 
 // ObjectMarshaler define how an object can register itself in the logging context.

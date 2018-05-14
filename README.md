@@ -30,7 +30,7 @@ The basic units of configuration are **appenders**, **encoders**, **filters**, a
 
 ### Appenders
 
-An appender takes a log record and logs it somewhere, for example, to a file, the console, or the syslog.
+An appender takes a log entry and logs it somewhere, for example, to a file, the console, or the syslog.
 
 ### Encoders
 

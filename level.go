@@ -10,7 +10,7 @@ type Level uint8
 const (
 	// UnknownLevel represents an unsupported level.
 	UnknownLevel = Level(iota)
-	// NoLevel is a no-op entries: the logger is disabled.
+	// NoLevel is a no-op entry: the logger is disabled.
 	NoLevel
 	// ErrorLevel logs are high-priority. If an application is running smoothly,
 	// no error should be generated.
@@ -25,16 +25,18 @@ const (
 )
 
 const (
-	strNoLevel        = "never"
-	strNoLevelNo      = "no"
-	strNoLevelNone    = "none"
-	strUnknownLevel   = "unknown"
-	strVerboseLevel   = "verbose"
-	strDebugLevel     = "debug"
-	strInfoLevel      = "info"
-	strWarnLevel      = "warning"
-	strShortWarnLevel = "warn"
-	strErrorLevel     = "error"
+	strNoLevel         = "never"
+	strNoLevelNo       = "no"
+	strNoLevelNone     = "none"
+	strNoLevelDisable  = "disable"
+	strNoLevelDisabled = "disabled"
+	strUnknownLevel    = "unknown"
+	strVerboseLevel    = "verbose"
+	strDebugLevel      = "debug"
+	strInfoLevel       = "info"
+	strWarnLevel       = "warning"
+	strShortWarnLevel  = "warn"
+	strErrorLevel      = "error"
 )
 
 // Convert the Level to a string.
@@ -66,7 +68,7 @@ func ParseLevel(level string) (Level, error) {
 		return InfoLevel, nil
 	case strDebugLevel, strVerboseLevel:
 		return DebugLevel, nil
-	case strNoLevel, strNoLevelNo, strNoLevelNone:
+	case strNoLevel, strNoLevelNo, strNoLevelNone, strNoLevelDisable, strNoLevelDisabled:
 		return NoLevel, nil
 	default:
 		return UnknownLevel, errors.Errorf("not a valid logger Level: %q", level)

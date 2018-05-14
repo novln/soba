@@ -138,13 +138,6 @@ func Binary(key string, value []byte) Field {
 	})
 }
 
-// Raw creates a non typesafe Field with given key and interface{}.
-func Raw(key string, value interface{}) Field {
-	return field(func(encoder Encoder) {
-		encoder.AddRaw(key, value)
-	})
-}
-
 // Skip is a no-op Field
 func Skip() Field {
 	return field(func(encoder Encoder) {})
