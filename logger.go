@@ -22,7 +22,7 @@ type Logger interface {
 }
 
 // IsLoggerNameValid verify that a Logger name has a valid format.
-var IsLoggerNameValid = regexp.MustCompile(`^[a-z]+[a-z.]+$`).MatchString
+var IsLoggerNameValid = regexp.MustCompile(`^[a-z]+[a-z._0-9]+[a-z0-9]+$`).MatchString
 
 // New creates a new Logger using given name.
 func New(ctx context.Context, name string) Logger {

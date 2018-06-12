@@ -11,6 +11,8 @@ func (ConsoleAppender) flush() {
 
 }
 
+// TODO (novln): Add a rolling system to FileAppender
+
 type FileAppender struct {
 }
 
