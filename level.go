@@ -1,9 +1,5 @@
 package soba
 
-import (
-	"github.com/pkg/errors"
-)
-
 // Level define an entry priority.
 type Level uint8
 
@@ -58,19 +54,19 @@ func (level Level) String() string {
 }
 
 // ParseLevel takes a string level and returns the log level constant.
-func ParseLevel(level string) (Level, error) {
+func ParseLevel(level string) (Level, bool) {
 	switch level {
 	case strErrorLevel:
-		return ErrorLevel, nil
+		return ErrorLevel, true
 	case strWarnLevel, strShortWarnLevel:
-		return WarnLevel, nil
+		return WarnLevel, true
 	case strInfoLevel:
-		return InfoLevel, nil
+		return InfoLevel, true
 	case strDebugLevel, strVerboseLevel:
-		return DebugLevel, nil
+		return DebugLevel, true
 	case strNoLevel, strNoLevelNo, strNoLevelNone, strNoLevelDisable, strNoLevelDisabled:
-		return NoLevel, nil
+		return NoLevel, true
 	default:
-		return UnknownLevel, errors.Errorf("not a valid logger Level: %q", level)
+		return UnknownLevel, false
 	}
 }
