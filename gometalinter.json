@@ -7,6 +7,7 @@
     "dupl",
     "ineffassign",
     "errcheck",
+    "gas",
     "vet",
     "unconvert",
     "interfacer",
@@ -21,8 +22,7 @@
     "gosimple",
     "gotype",
     "gotypex",
-    "nakedret",
-    "gas"
+    "nakedret"
   ],
   "EnableGC": true,
   "Deadline": "1200s",
@@ -33,5 +33,8 @@
   "Test": true,
   "LineLength": 120,
   "Cyclo": 10,
-  "DuplThreshold": 80
+  "DuplThreshold": 80,
+  "Skip": [
+    "examples"
+  ]
 }
