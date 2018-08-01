@@ -70,3 +70,9 @@ func ParseLevel(level string) (Level, bool) {
 		return UnknownLevel, false
 	}
 }
+
+// IsLevelNameValid verify that a level name is allowed.
+func IsLevelNameValid(level string) bool {
+	_, ok := ParseLevel(level)
+	return ok
+}
