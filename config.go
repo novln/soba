@@ -13,9 +13,14 @@ const DefaultConfigPath = "soba.yml"
 
 // A Config describes a soba instance configuration.
 type Config struct {
-	Root      ConfigLogger
+	// Root defines default logger configuration.
+	Root ConfigLogger
+	// Appenders is a list of appenders definition.
 	Appenders map[string]ConfigAppender
-	Loggers   map[string]ConfigLogger
+	// Loggers is a list of loggers configuration.
+	Loggers map[string]ConfigLogger
+	// verified defines if configuration has been validated.
+	verified bool
 }
 
 // A ConfigLogger describes a logger configuration.
@@ -27,7 +32,9 @@ type ConfigLogger struct {
 
 // A ConfigAppender describes an appender configuration.
 type ConfigAppender struct {
+	// Type defines an appender type. Could be "console" or "file".
 	Type string
+	// Path defines the file path for a file appender.
 	Path string
 }
 
@@ -61,6 +68,13 @@ func ParseConfig(path string) (*Config, error) {
 
 // ValidateConfig verifies that given configuration is valid.
 func ValidateConfig(conf *Config) error {
+	if conf == nil {
+		return errors.Errorf("given configuration is empty")
+	}
+	if conf.verified {
+		return nil
+	}
+
 	conf.Root.Additive = false
 	if !IsLevelNameValid(conf.Root.Level) {
 		return errors.Errorf("level is invalid for root logger")
@@ -89,9 +103,9 @@ func ValidateConfig(conf *Config) error {
 
 	for name, appender := range conf.Appenders {
 		switch appender.Type {
-		case "console":
+		case ConsoleAppenderType:
 
-		case "file":
+		case FileAppenderType:
 			if appender.Path == "" {
 				return errors.Errorf("path is invalid for appender: %s", name)
 			}
@@ -100,6 +114,8 @@ func ValidateConfig(conf *Config) error {
 			return errors.Errorf("type is invalid for appender: %s", name)
 		}
 	}
+
+	conf.verified = true
 
 	return nil
 }
