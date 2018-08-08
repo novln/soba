@@ -1,8 +1,8 @@
 package soba
 
 import (
-	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/pkg/errors"
 )
@@ -28,14 +28,14 @@ func Create(conf *Config) (Handler, error) {
 type handler struct {
 	conf      Config
 	appenders map[string]Appender
-	loggers   map[string]*logger
+	loggers   sync.Map
 }
 
 func create(conf *Config) (*handler, error) {
 	handler := &handler{
 		conf:      *conf,
 		appenders: map[string]Appender{},
-		loggers:   map[string]*logger{},
+		loggers:   sync.Map{},
 	}
 
 	err := createAppenders(conf, handler)
@@ -48,7 +48,7 @@ func create(conf *Config) (*handler, error) {
 		return nil, errors.Wrap(err, "cannot create soba handler")
 	}
 
-	fmt.Printf("%+v\n", conf.Root)
+	// TODO create other loggers
 
 	return handler, nil
 }
@@ -85,16 +85,16 @@ func createRootLogger(conf *Config, handler *handler) error {
 		appenders: appenders,
 	}
 
-	handler.loggers[""] = logger
+	handler.loggers.Store("", logger)
 
 	return nil
 }
 
 func (h *handler) New(name string) Logger {
 	// Try to find a logger identified by given name.
-	logger, ok := h.loggers[name]
+	val, ok := h.loggers.Load(name)
 	if ok {
-		return logger
+		return val.(*logger)
 	}
 
 	// Otherwise, try to find a ancestor one.
@@ -105,12 +105,21 @@ func (h *handler) New(name string) Logger {
 		list := hierarchy[0:cursor]
 		current := strings.Join(list, ".")
 
-		logger, ok := h.loggers[current]
+		val, ok = h.loggers.Load(current)
 		if ok {
-			return logger.withName(name)
+			instance := val.(*logger).withName(name)
+			val, _ = h.loggers.LoadOrStore(name, instance)
+			return val.(*logger)
 		}
 	}
 
 	// Finally, returns root logger.
-	return h.loggers[""].withName(name)
+	val, ok = h.loggers.Load("")
+	if !ok {
+		panic("soba: root logger must be defined")
+	}
+
+	instance := val.(*logger).withName(name)
+	val, _ = h.loggers.LoadOrStore(name, instance)
+	return val.(*logger)
 }
