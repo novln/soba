@@ -32,7 +32,7 @@ func Load(ctx context.Context) (context.Context, error) {
 	return LoadWithConfig(ctx, &Config{
 		Loggers: map[string]ConfigLogger{},
 		Appenders: map[string]ConfigAppender{
-			"stdout": ConfigAppender{
+			"stdout": {
 				Type: "console",
 			},
 		},

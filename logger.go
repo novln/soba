@@ -69,7 +69,7 @@ func (l *logger) With(fields ...Field) Logger {
 	return l
 }
 
-func (l *logger) withName(name string) *logger {
+func (l *logger) copyWithName(name string) *logger {
 	return &logger{
 		name:      name,
 		level:     l.level,

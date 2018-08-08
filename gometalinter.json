@@ -7,7 +7,6 @@
     "dupl",
     "ineffassign",
     "errcheck",
-    "gas",
     "vet",
     "unconvert",
     "interfacer",
