@@ -23,6 +23,20 @@ type Config struct {
 	verified bool
 }
 
+// IsAppenderExists verifies if appender identified by given name exists.
+func (conf *Config) IsAppenderExists(name string) bool {
+	_, ok := conf.Appenders[name]
+	if ok {
+		return true
+	}
+
+	plMutex.Lock()
+	defer plMutex.Unlock()
+
+	_, ok = plAppenders[name]
+	return ok
+}
+
 // A ConfigLogger describes a logger configuration.
 type ConfigLogger struct {
 	Level     string
@@ -75,33 +89,78 @@ func ValidateConfig(conf *Config) error {
 		return nil
 	}
 
+	err := validateAppendersConfig(conf)
+	if err != nil {
+		return err
+	}
+
+	err = validateRootLoggerConfig(conf)
+	if err != nil {
+		return err
+	}
+
+	err = validateLoggersConfig(conf)
+	if err != nil {
+		return err
+	}
+
+	conf.verified = true
+
+	return nil
+}
+
+func validateRootLoggerConfig(conf *Config) error {
+
 	conf.Root.Additive = false
+
 	if !IsLevelNameValid(conf.Root.Level) {
 		return errors.Errorf("level is invalid for root logger")
 	}
+
 	if len(conf.Root.Appenders) == 0 {
 		return errors.Errorf("one appender is required for root logger")
 	}
+
 	for _, appender := range conf.Root.Appenders {
-		_, ok := conf.Appenders[appender]
-		if !ok {
+		if !conf.IsAppenderExists(appender) {
 			return errors.Errorf("appender is invalid for root logger")
 		}
 	}
 
+	return nil
+}
+
+func validateLoggersConfig(conf *Config) error {
+
 	for name, logger := range conf.Loggers {
+
 		if !IsLevelNameValid(logger.Level) {
 			return errors.Errorf("level is invalid for logger: %s", name)
 		}
+
+		if !IsLoggerNameValid(name) {
+			return errors.Errorf("name is invalid for logger: %s", name)
+		}
+
 		for _, appender := range logger.Appenders {
-			_, ok := conf.Appenders[appender]
-			if !ok {
+			if !conf.IsAppenderExists(appender) {
 				return errors.Errorf("appender is invalid for logger: %s", name)
 			}
 		}
+
 	}
 
+	return nil
+}
+
+func validateAppendersConfig(conf *Config) error {
+
 	for name, appender := range conf.Appenders {
+
+		if !IsAppenderNameValid(name) {
+			return errors.Errorf("name is invalid for appender: %s", name)
+		}
+
 		switch appender.Type {
 		case ConsoleAppenderType:
 
@@ -114,8 +173,6 @@ func ValidateConfig(conf *Config) error {
 			return errors.Errorf("type is invalid for appender: %s", name)
 		}
 	}
-
-	conf.verified = true
 
 	return nil
 }

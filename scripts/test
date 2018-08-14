@@ -3,4 +3,10 @@
 SOURCE_DIRECTORY=$(dirname "${BASH_SOURCE[0]}")
 cd "${SOURCE_DIRECTORY}/.."
 
-go test -v -race .
+if [ -z "$1" ]; then
+    go test -v -count=1 -p 1 -race $(go list ./... | grep -v -E '\/(testdata|examples)\/')
+else
+    go test -v -count=1 -p 1 -race $@
+fi
+
+exit $?

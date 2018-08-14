@@ -7,8 +7,27 @@ import (
 	"github.com/novln/soba"
 )
 
-// Test logger name format.
-func TestLogger_IsNameValid(t *testing.T) {
+// TestAppender is an appender for unit test.
+type TestAppender struct {
+	name string
+}
+
+func (appender *TestAppender) Name() string {
+	return appender.name
+}
+
+// NewTestAppender creates a new TestAppender.
+func NewTestAppender(name string) *TestAppender {
+	return &TestAppender{
+		name: name,
+	}
+}
+
+// Ensure TestAppender implements Appender interface at compile time.
+var _ soba.Appender = &TestAppender{}
+
+// Test appender name format.
+func TestAppender_IsNameValid(t *testing.T) {
 
 	scenarios := []struct {
 		name  string

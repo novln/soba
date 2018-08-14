@@ -1,6 +1,8 @@
 package soba
 
 import (
+	"regexp"
+
 	"github.com/pkg/errors"
 )
 
@@ -11,11 +13,15 @@ const (
 	FileAppenderType = "file"
 )
 
+// An Appender defines an entity that receives a log entry and logs it somewhere,
+// like for example, to a file, the console, or the syslog.
 type Appender interface {
 	// Name returns Appender name.
 	Name() string
-	flush()
 }
+
+// IsAppenderNameValid verify that a Appender name has a valid format.
+var IsAppenderNameValid = regexp.MustCompile(`^[a-z]+[a-z._0-9-]+[a-z0-9]+$`).MatchString
 
 // NewAppender creates a new Appender from given configuration.
 func NewAppender(name string, conf ConfigAppender) (Appender, error) {
@@ -43,6 +49,7 @@ type ConsoleAppender struct {
 	name string
 }
 
+// Name returns Appender name.
 func (appender *ConsoleAppender) Name() string {
 	return appender.name
 }
@@ -57,6 +64,7 @@ type FileAppender struct {
 	name string
 }
 
+// Name returns Appender name.
 func (appender *FileAppender) Name() string {
 	return appender.name
 }

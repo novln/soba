@@ -15,12 +15,14 @@ type Handler interface {
 }
 
 // Create provides an alternative way to obtain loggers if the context based approach doesn't
-// fit your requirements by creating a handler instance from given configuration.
+// fit your requirements. It will creates a new handler using given configuration.
 func Create(conf *Config) (Handler, error) {
+
 	err := ValidateConfig(conf)
 	if err != nil {
 		return nil, errors.Wrap(err, "configuration is invalid")
 	}
+
 	return create(conf)
 }
 
@@ -31,7 +33,9 @@ type handler struct {
 	loggers   sync.Map
 }
 
+// create a handler using given configuration.
 func create(conf *Config) (*handler, error) {
+
 	handler := &handler{
 		conf:      *conf,
 		appenders: map[string]Appender{},
@@ -57,6 +61,7 @@ func create(conf *Config) (*handler, error) {
 }
 
 func createAppenders(conf *Config, handler *handler) error {
+
 	for name := range conf.Appenders {
 		appender, err := NewAppender(name, conf.Appenders[name])
 		if err != nil {
@@ -64,10 +69,19 @@ func createAppenders(conf *Config, handler *handler) error {
 		}
 		handler.appenders[name] = appender
 	}
+
+	plMutex.Lock()
+	defer plMutex.Unlock()
+
+	for name, appender := range plAppenders {
+		handler.appenders[name] = appender
+	}
+
 	return nil
 }
 
 func createRootLogger(conf *Config, handler *handler) error {
+
 	level, err := getLoggerLevel(conf.Root, "root")
 	if err != nil {
 		return err
@@ -78,19 +92,18 @@ func createRootLogger(conf *Config, handler *handler) error {
 		return err
 	}
 
-	handler.loggers.Store("", &logger{
-		level:     level,
-		appenders: appenders,
-	})
+	handler.loggers.Store("", NewLogger("root", level, appenders))
 
 	return nil
 }
 
 func getLoggerLevel(conf ConfigLogger, name string) (Level, error) {
+
 	level, ok := ParseLevel(conf.Level)
 	if !ok {
 		return UnknownLevel, errors.Errorf("unknown level for logger '%s': %s", name, conf.Level)
 	}
+
 	return level, nil
 }
 
@@ -113,6 +126,7 @@ func getParentAppendersForLogger(conf *Config, handler *handler, hierarchy []str
 }
 
 func getLocalAppendersForLogger(conf ConfigLogger, handler *handler, result map[string]Appender) error {
+
 	for _, name := range conf.Appenders {
 		appender, ok := handler.appenders[name]
 		if !ok {
@@ -120,13 +134,19 @@ func getLocalAppendersForLogger(conf ConfigLogger, handler *handler, result map[
 		}
 		result[name] = appender
 	}
+
 	return nil
 }
 
 func getAppendersForRootLogger(conf *Config, handler *handler) ([]Appender, error) {
+
 	appenders := map[string]Appender{}
 
-	getLocalAppendersForLogger(conf.Root, handler, appenders)
+	err := getLocalAppendersForLogger(conf.Root, handler, appenders)
+	if err != nil {
+		return nil, err
+	}
+
 	list := []Appender{}
 	for _, appender := range appenders {
 		list = append(list, appender)
@@ -136,12 +156,20 @@ func getAppendersForRootLogger(conf *Config, handler *handler) ([]Appender, erro
 }
 
 func getAppendersForChildLogger(conf *Config, handler *handler, name string) ([]Appender, error) {
+
 	appenders := map[string]Appender{}
 
-	getLocalAppendersForLogger(conf.Loggers[name], handler, appenders)
+	err := getLocalAppendersForLogger(conf.Loggers[name], handler, appenders)
+	if err != nil {
+		return nil, err
+	}
+
 	if conf.Loggers[name].Additive {
 		hierarchy := strings.Split(name, ".")
-		getParentAppendersForLogger(conf, handler, hierarchy, appenders)
+		err = getParentAppendersForLogger(conf, handler, hierarchy, appenders)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	list := []Appender{}
@@ -153,7 +181,9 @@ func getAppendersForChildLogger(conf *Config, handler *handler, name string) ([]
 }
 
 func createChildLoggers(conf *Config, handler *handler) error {
+
 	for name := range conf.Loggers {
+
 		level, err := getLoggerLevel(conf.Loggers[name], name)
 		if err != nil {
 			return err
@@ -164,20 +194,19 @@ func createChildLoggers(conf *Config, handler *handler) error {
 			return err
 		}
 
-		handler.loggers.Store(name, &logger{
-			level:     level,
-			appenders: appenders,
-		})
+		handler.loggers.Store(name, NewLogger(name, level, appenders))
 
 	}
+
 	return nil
 }
 
-func (h *handler) New(name string) Logger {
+func (handler *handler) New(name string) Logger {
+
 	// First, try to find the logger identified by given name.
-	val, ok := h.loggers.Load(name)
+	val, ok := handler.loggers.Load(name)
 	if ok {
-		return val.(*logger)
+		return val.(Logger)
 	}
 
 	// Next, try to find a ancestor one by moving up to the hierarchy.
@@ -188,21 +217,21 @@ func (h *handler) New(name string) Logger {
 		list := hierarchy[0:cursor]
 		current := strings.Join(list, ".")
 
-		val, ok = h.loggers.Load(current)
+		val, ok = handler.loggers.Load(current)
 		if ok {
-			copy := val.(*logger).copyWithName(name)
-			val, _ = h.loggers.LoadOrStore(name, copy)
-			return val.(*logger)
+			copy := val.(Logger).copyWithName(name)
+			val, _ = handler.loggers.LoadOrStore(name, copy)
+			return val.(Logger)
 		}
 	}
 
 	// Finally, use root logger as default.
-	val, ok = h.loggers.Load("")
+	val, ok = handler.loggers.Load("")
 	if !ok {
 		panic("soba: root logger must be defined")
 	}
 
-	copy := val.(*logger).copyWithName(name)
-	val, _ = h.loggers.LoadOrStore(name, copy)
-	return val.(*logger)
+	copy := val.(Logger).copyWithName(name)
+	val, _ = handler.loggers.LoadOrStore(name, copy)
+	return val.(Logger)
 }

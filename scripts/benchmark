@@ -1,0 +1,12 @@
+#!/bin/bash
+
+SOURCE_DIRECTORY=$(dirname "${BASH_SOURCE[0]}")
+cd "${SOURCE_DIRECTORY}/.."
+
+if [ -z "$1" ]; then
+    go test -v -benchtime=40s -run=XXX -benchmem -bench=. $(go list ./... | grep -v -E '\/(testdata|examples)\/')
+else
+    go test -v -benchtime=40s -run=XXX -benchmem -bench=$@ $(go list ./... | grep -v -E '\/(testdata|examples)\/')
+fi
+
+exit $?
