@@ -24,18 +24,27 @@ type Entry struct {
 	fields  []Field
 }
 
-func (entry *Entry) Level() Level {
+// Level returns entry level.
+func (entry Entry) Level() Level {
 	return entry.level
 }
 
-func (entry *Entry) Message() string {
+// Message returns entry message.
+func (entry Entry) Message() string {
 	return entry.message
 }
 
-func (entry *Entry) Fields() []Field {
+// Unix returns entry timestamp.
+func (entry Entry) Unix() int64 {
+	return entry.unix
+}
+
+// Fields returns entry fields.
+func (entry Entry) Fields() []Field {
 	return entry.fields
 }
 
+// Flush recycles entry.
 func (entry *Entry) Flush() {
 	if entry != nil {
 		entryPool.Put(entry)
