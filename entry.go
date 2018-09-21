@@ -5,16 +5,6 @@ import (
 	"time"
 )
 
-// An entry pool to reduce memory allocation pressure.
-var entryPool = &sync.Pool{
-	New: func() interface{} {
-		return &Entry{
-			//buffer: make([]byte, 0, 1024),
-			fields: make([]Field, 0, 64),
-		}
-	},
-}
-
 // Entry represents a log event.
 type Entry struct {
 	name    string
@@ -65,4 +55,14 @@ func NewEntry(name string, level Level, message string, left []Field, right []Fi
 	// e.buf = enc.AppendBeginMarker(e.buf)
 	// e.w = w
 	return e
+}
+
+// An entry pool to reduce memory allocation pressure.
+var entryPool = &sync.Pool{
+	New: func() interface{} {
+		return &Entry{
+			//buffer: make([]byte, 0, 1024),
+			fields: make([]Field, 0, 64),
+		}
+	},
 }

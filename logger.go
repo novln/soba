@@ -89,7 +89,11 @@ func (logger Logger) With(fields ...Field) Logger {
 
 func (logger Logger) write(level Level, message string, fields []Field) {
 	entry := NewEntry(logger.name, level, message, logger.fields, fields)
+	defer entry.Flush()
 	fmt.Printf("%+v\n", entry)
+	for i := range logger.appenders {
+		logger.appenders[i].write(entry)
+	}
 }
 
 func (logger Logger) copyWithName(name string) Logger {
