@@ -1,6 +1,7 @@
 package soba
 
 import (
+	"fmt"
 	"regexp"
 
 	"github.com/pkg/errors"
@@ -18,6 +19,8 @@ const (
 type Appender interface {
 	// Name returns Appender name.
 	Name() string
+	// Write receives a log entry.
+	Write(entry Entry)
 }
 
 // IsAppenderNameValid verify that a Appender name has a valid format.
@@ -45,6 +48,7 @@ func NewAppender(name string, conf ConfigAppender) (Appender, error) {
 	}
 }
 
+// ConsoleAppender is an appender that uses stdout to write log entry.
 type ConsoleAppender struct {
 	name string
 }
@@ -54,12 +58,15 @@ func (appender *ConsoleAppender) Name() string {
 	return appender.name
 }
 
-func (ConsoleAppender) flush() {
-
+// Write receives a log entry.
+func (appender *ConsoleAppender) Write(entry Entry) {
+	// TODO Optimize this ?
+	fmt.Println(entry)
 }
 
 // TODO (novln): Add a rolling system to FileAppender
 
+// FileAppender is an appender that uses a file to write log entry.
 type FileAppender struct {
 	name string
 }
@@ -69,6 +76,8 @@ func (appender *FileAppender) Name() string {
 	return appender.name
 }
 
-func (FileAppender) flush() {
-
+// Write receives a log entry.
+func (appender *FileAppender) Write(entry Entry) {
+	// TODO
+	fmt.Println(entry)
 }

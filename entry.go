@@ -14,6 +14,11 @@ type Entry struct {
 	fields  []Field
 }
 
+// Name returns entry name.
+func (entry Entry) Name() string {
+	return entry.name
+}
+
 // Level returns entry level.
 func (entry Entry) Level() Level {
 	return entry.level
@@ -42,7 +47,7 @@ func (entry *Entry) Flush() {
 }
 
 // NewEntry creates a new entry with given configuration.
-func NewEntry(name string, level Level, message string, left []Field, right []Field) *Entry {
+func NewEntry(name string, level Level, message string, fields ...[]Field) *Entry {
 	e := entryPool.Get().(*Entry)
 	e.name = name
 	e.level = level
@@ -50,8 +55,9 @@ func NewEntry(name string, level Level, message string, left []Field, right []Fi
 	e.unix = time.Now().Unix()
 	//e.buffer = e.buffer[:0]
 	e.fields = e.fields[:0]
-	e.fields = append(e.fields, left...)
-	e.fields = append(e.fields, right...)
+	for i := range fields {
+		e.fields = append(e.fields, fields[i]...)
+	}
 	// e.buf = enc.AppendBeginMarker(e.buf)
 	// e.w = w
 	return e

@@ -3,17 +3,23 @@ package soba_test
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/novln/soba"
 )
 
 // TestAppender is an appender for unit test.
 type TestAppender struct {
-	name string
+	name    string
+	entries []soba.Entry
 }
 
 func (appender *TestAppender) Name() string {
 	return appender.name
+}
+
+func (appender *TestAppender) Write(entry soba.Entry) {
+	appender.entries = append(appender.entries, entry)
 }
 
 // NewTestAppender creates a new TestAppender.
@@ -123,4 +129,34 @@ func TestAppender_IsNameValid(t *testing.T) {
 		}
 	}
 
+}
+
+// Test appender write operation.
+func TestAppender_Write(t *testing.T) {
+	appender := NewTestAppender("foobar")
+	before := time.Now()
+	entry := soba.NewEntry("foobar.module.asm", soba.InfoLevel, "\\x67")
+	defer entry.Flush()
+	after := time.Now()
+
+	appender.Write(*entry)
+
+	if len(appender.entries) != 1 {
+		t.Fatalf("Unexpected number of entries: %v should be %v", len(appender.entries), 1)
+	}
+	if appender.entries[0].Name() != "foobar.module.asm" {
+		t.Fatalf("Unexpected entry name: %v should be %v", appender.entries[0].Name(), "foobar.module.asm")
+	}
+	if appender.entries[0].Level() != soba.InfoLevel {
+		t.Fatalf("Unexpected entry message: %v should be %v", appender.entries[0].Level(), soba.InfoLevel)
+	}
+	if appender.entries[0].Message() != "\\x67" {
+		t.Fatalf("Unexpected entry message: %v should be %v", appender.entries[0].Message(), "\\x67")
+	}
+	if appender.entries[0].Unix() < before.Unix() {
+		t.Fatalf("Unexpected entry timestamp: %v should be >= %v", appender.entries[0].Unix(), before.Unix())
+	}
+	if appender.entries[0].Unix() > after.Unix() {
+		t.Fatalf("Unexpected entry timestamp: %v should be <= %v", appender.entries[0].Unix(), after.Unix())
+	}
 }
