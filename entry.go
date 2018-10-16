@@ -52,6 +52,7 @@ func (entry *Entry) Flush() {
 }
 
 // NewEntry creates a new entry with given configuration.
+// In case of field with duplicate name, the last one will be kept.
 func NewEntry(name string, level Level, message string, fields ...[]Field) *Entry {
 	entry := entryPool.Get().(*Entry)
 	entry.name = name
