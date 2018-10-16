@@ -53,13 +53,10 @@ func NewEntry(name string, level Level, message string, fields ...[]Field) *Entr
 	e.level = level
 	e.message = message
 	e.unix = time.Now().Unix()
-	//e.buffer = e.buffer[:0]
 	e.fields = e.fields[:0]
 	for i := range fields {
 		e.fields = append(e.fields, fields[i]...)
 	}
-	// e.buf = enc.AppendBeginMarker(e.buf)
-	// e.w = w
 	return e
 }
 
@@ -67,7 +64,6 @@ func NewEntry(name string, level Level, message string, fields ...[]Field) *Entr
 var entryPool = &sync.Pool{
 	New: func() interface{} {
 		return &Entry{
-			//buffer: make([]byte, 0, 1024),
 			fields: make([]Field, 0, 64),
 		}
 	},
