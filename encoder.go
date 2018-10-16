@@ -1,40 +1,14 @@
 package soba
 
 import (
+	"fmt"
 	"time"
 )
-
-// EncoderMode defines the behavior on an Encoder.
-type EncoderMode uint8
-
-const (
-	// UnknownMode indicates that the Encoder mode is undefined for the moment.
-	UnknownMode = EncoderMode(iota)
-	// ArrayMode indicates that the Encoder will encode array entities.
-	ArrayMode
-	// ObjectMode indicates that the Encoder will encode object entities.
-	ObjectMode
-)
-
-func (m EncoderMode) String() string {
-	switch m {
-	case ArrayMode:
-		return "ArrayMode"
-	case ObjectMode:
-		return "ObjectMode"
-	default:
-		return "UnknownMode"
-	}
-}
 
 // Encoder is a strongly-typed, encoding-agnostic interface for adding array, map or struct-like object to the
 // logging context. Also, be advised that Encoder aren't safe for concurrent use.
 type Encoder interface {
-	// Mode indicates the encoder's mode: object, array or neither.
-	Mode() EncoderMode
-	// Encoder is an ObjectEncoder in ObjectMode.
 	ObjectEncoder
-	// Encoder is an ArrayEncoder in ArrayMode.
 	ArrayEncoder
 }
 
@@ -67,7 +41,7 @@ type ArrayEncoder interface {
 type ObjectEncoder interface {
 	AddArray(key string, value ArrayMarshaler)
 	AddObject(key string, value ObjectMarshaler)
-	AddObjects(key string, value []ObjectMarshaler)
+	AddObjects(key string, values []ObjectMarshaler)
 	AddInt(key string, value int)
 	AddInts(key string, values []int)
 	AddInt8(key string, value int8)
@@ -94,6 +68,8 @@ type ObjectEncoder interface {
 	AddFloat64s(key string, values []float64)
 	AddString(key string, value string)
 	AddStrings(key string, values []string)
+	AddStringer(key string, value fmt.Stringer)
+	AddStringers(key string, values []fmt.Stringer)
 	AddTime(key string, value time.Time)
 	AddTimes(key string, values []time.Time)
 	AddDuration(key string, value time.Duration)
@@ -105,10 +81,10 @@ type ObjectEncoder interface {
 
 // ObjectMarshaler define how an object can register itself in the logging context.
 type ObjectMarshaler interface {
-	EncodeObject(encoder ObjectEncoder)
+	Encode(encoder ObjectEncoder)
 }
 
 // ArrayMarshaler define how an array can register itself in the logging context.
 type ArrayMarshaler interface {
-	EncodeArray(encoder ArrayEncoder)
+	Encode(encoder ArrayEncoder)
 }

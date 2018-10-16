@@ -137,7 +137,9 @@ func String(key, value string) Field {
 
 // Stringer creates a typesafe Field with given key and Stringer.
 func Stringer(key string, value fmt.Stringer) Field {
-	return String(key, value.String())
+	return NewField(key, func(encoder Encoder) {
+		encoder.AddStringer(key, value)
+	})
 }
 
 // Time creates a typesafe Field with given key and Time.
@@ -199,6 +201,13 @@ func NamedError(key string, err error) Field {
 // ----------------------------------------------------------------------------
 // Array
 // ----------------------------------------------------------------------------
+
+// Objects creates a typesafe Field with given key and collection of ObjectMarshaler.
+func Objects(key string, values []ObjectMarshaler) Field {
+	return NewField(key, func(encoder Encoder) {
+		encoder.AddObjects(key, values)
+	})
+}
 
 // Array creates a typesafe Field with given key and ArrayMarshaler.
 func Array(key string, value ArrayMarshaler) Field {
@@ -295,6 +304,13 @@ func Float64s(key string, values []float64) Field {
 func Strings(key string, values []string) Field {
 	return NewField(key, func(encoder Encoder) {
 		encoder.AddStrings(key, values)
+	})
+}
+
+// Stringers creates a typesafe Field with given key and slice of Stringer.
+func Stringers(key string, values []fmt.Stringer) Field {
+	return NewField(key, func(encoder Encoder) {
+		encoder.AddStringers(key, values)
 	})
 }
 
