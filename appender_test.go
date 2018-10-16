@@ -154,9 +154,11 @@ func TestAppender_Write(t *testing.T) {
 		t.Fatalf("Unexpected entry message: %v should be %v", appender.entries[0].Message(), "\\x67")
 	}
 	if appender.entries[0].Unix() < before.Unix() {
-		t.Fatalf("Unexpected entry timestamp: %v should be >= %v", appender.entries[0].Unix(), before.Unix())
+		t.Fatalf("Unexpected entry timestamp: %v should be greater than or equals to %v",
+			appender.entries[0].Unix(), before.Unix())
 	}
 	if appender.entries[0].Unix() > after.Unix() {
-		t.Fatalf("Unexpected entry timestamp: %v should be <= %v", appender.entries[0].Unix(), after.Unix())
+		t.Fatalf("Unexpected entry timestamp: %v should be less than or equals to %v",
+			appender.entries[0].Unix(), after.Unix())
 	}
 }

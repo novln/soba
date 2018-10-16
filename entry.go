@@ -64,8 +64,10 @@ func NewEntry(name string, level Level, message string, fields ...[]Field) *Entr
 		for y := range fields[x] {
 			// Avoid duplication of field with the same name.
 			// Last field overwrite the previous one.
-			i, ok := entry.indexes[fields[x][y].name]
+			name := fields[x][y].name
+			i, ok := entry.indexes[name]
 			if !ok {
+				entry.indexes[name] = len(entry.fields)
 				entry.fields = append(entry.fields, fields[x][y])
 			} else {
 				entry.fields[i] = fields[x][y]
