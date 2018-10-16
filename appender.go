@@ -54,10 +54,9 @@ func NewAppender(name string, conf ConfigAppender) (Appender, error) {
 
 // ConsoleAppender is an appender that uses stdout to write log entry.
 type ConsoleAppender struct {
-	mutex  sync.Mutex
-	name   string
-	out    io.Writer
-	buffer []byte
+	mutex sync.Mutex
+	name  string
+	out   io.Writer
 }
 
 // Name returns Appender name.
