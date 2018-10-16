@@ -12,6 +12,7 @@ type Entry struct {
 	level   Level
 	message string
 	fields  []Field
+	indexes map[string]int
 }
 
 // Name returns entry name.
@@ -42,29 +43,44 @@ func (entry Entry) Fields() []Field {
 // Flush recycles entry.
 func (entry *Entry) Flush() {
 	if entry != nil {
+		entry.fields = entry.fields[:0]
+		for name := range entry.indexes {
+			delete(entry.indexes, name)
+		}
 		entryPool.Put(entry)
 	}
 }
 
 // NewEntry creates a new entry with given configuration.
 func NewEntry(name string, level Level, message string, fields ...[]Field) *Entry {
-	e := entryPool.Get().(*Entry)
-	e.name = name
-	e.level = level
-	e.message = message
-	e.unix = time.Now().Unix()
-	e.fields = e.fields[:0]
-	for i := range fields {
-		e.fields = append(e.fields, fields[i]...)
+	entry := entryPool.Get().(*Entry)
+	entry.name = name
+	entry.level = level
+	entry.message = message
+	entry.unix = time.Now().Unix()
+
+	for x := range fields {
+		for y := range fields[x] {
+			// Avoid duplication of field with the same name.
+			// Last field overwrite the previous one.
+			i, ok := entry.indexes[fields[x][y].name]
+			if !ok {
+				entry.fields = append(entry.fields, fields[x][y])
+			} else {
+				entry.fields[i] = fields[x][y]
+			}
+		}
 	}
-	return e
+
+	return entry
 }
 
 // An entry pool to reduce memory allocation pressure.
 var entryPool = &sync.Pool{
 	New: func() interface{} {
 		return &Entry{
-			fields: make([]Field, 0, 64),
+			indexes: make(map[string]int, 64),
+			fields:  make([]Field, 0, 64),
 		}
 	},
 }
