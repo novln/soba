@@ -2,7 +2,10 @@ package soba
 
 import (
 	"fmt"
+	"io"
+	"os"
 	"regexp"
+	"sync"
 
 	"github.com/pkg/errors"
 )
@@ -32,6 +35,7 @@ func NewAppender(name string, conf ConfigAppender) (Appender, error) {
 	case ConsoleAppenderType:
 		appender := &ConsoleAppender{
 			name: name,
+			out:  os.Stdout,
 		}
 
 		return appender, nil
@@ -50,7 +54,10 @@ func NewAppender(name string, conf ConfigAppender) (Appender, error) {
 
 // ConsoleAppender is an appender that uses stdout to write log entry.
 type ConsoleAppender struct {
-	name string
+	mutex  sync.Mutex
+	name   string
+	out    io.Writer
+	buffer []byte
 }
 
 // Name returns Appender name.
@@ -60,7 +67,12 @@ func (appender *ConsoleAppender) Name() string {
 
 // Write receives a log entry.
 func (appender *ConsoleAppender) Write(entry Entry) {
-	// TODO Optimize this ?
+	appender.mutex.Lock()
+	defer appender.mutex.Unlock()
+
+	appender.buffer = appender.buffer[:0]
+
+	// TODO Use encoder to write a binary buffer and flush it on io.Writer...
 	fmt.Println(entry)
 }
 
