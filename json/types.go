@@ -33,6 +33,14 @@ func (encoder *Encoder) AppendTime(value time.Time) {
 	encoder.buffer = append(encoder.buffer, '"')
 }
 
+// AppendDuration converts the input duration to a string and appends the encoded value to the encoder buffer.
+func (encoder *Encoder) AppendDuration(value time.Duration) {
+	encoder.AppendElementSeparator()
+	encoder.buffer = append(encoder.buffer, '"')
+	encoder.safeAddString(value.String())
+	encoder.buffer = append(encoder.buffer, '"')
+}
+
 // safeAddString JSON-escapes a string and appends it to the internal buffer.
 // Unlike the standard library's encoder, it doesn't attempt to protect the
 // user from browser vulnerabilities or JSONP-related problems.

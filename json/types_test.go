@@ -153,3 +153,36 @@ func TestJSON_Encoder_AppendTime(t *testing.T) {
 		}
 	}
 }
+
+func TestJSON_Encoder_AppendDuration(t *testing.T) {
+	{
+		encoder := json.NewEncoder()
+		defer encoder.Close()
+
+		latency := (2 * time.Millisecond) + (523 * time.Microsecond)
+		expected := `"2.523ms"`
+
+		encoder.AppendDuration(latency)
+		buffer := encoder.Bytes()
+
+		if expected != string(buffer) {
+			t.Fatalf("Unexpected buffer: '%s' should be '%s'", string(buffer), expected)
+		}
+	}
+	{
+		encoder := json.NewEncoder()
+		defer encoder.Close()
+
+		latency1 := (2 * time.Millisecond) + (523 * time.Microsecond)
+		latency2 := (34 * time.Millisecond) + (127 * time.Microsecond) + (65 * time.Nanosecond)
+		expected := `"2.523ms","34.127065ms"`
+
+		encoder.AppendDuration(latency1)
+		encoder.AppendDuration(latency2)
+		buffer := encoder.Bytes()
+
+		if expected != string(buffer) {
+			t.Fatalf("Unexpected buffer: '%s' should be '%s'", string(buffer), expected)
+		}
+	}
+}
