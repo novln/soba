@@ -69,8 +69,6 @@ func (appender *ConsoleAppender) Write(entry Entry) {
 	appender.mutex.Lock()
 	defer appender.mutex.Unlock()
 
-	appender.buffer = appender.buffer[:0]
-
 	// TODO Use encoder to write a binary buffer and flush it on io.Writer...
 	fmt.Println(entry)
 }

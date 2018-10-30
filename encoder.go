@@ -33,7 +33,6 @@ type ArrayEncoder interface {
 	AppendTime(value time.Time)
 	AppendDuration(value time.Duration)
 	AppendBool(value bool)
-	AppendByte(value byte)
 }
 
 // ObjectEncoder is a strongly-typed, encoding-agnostic interface for adding map or struct-like object to the

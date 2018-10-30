@@ -4,12 +4,16 @@ import (
 	"sync"
 )
 
+// Source forked from https://github.com/uber-go/zap and from https://github.com/rs/zerolog
+
+// Encoder is a JSON encoder that isn't safe for concurrent access.
 type Encoder struct {
 	buffer []byte
 }
 
+// Bytes return the encoder content buffer.
 func (encoder *Encoder) Bytes() []byte {
-	return []byte{}
+	return encoder.buffer
 }
 
 // Close recycles underlying resources of encoder.
@@ -23,6 +27,18 @@ func (encoder *Encoder) Close() {
 	if encoder != nil && cap(encoder.buffer) < (1<<16) {
 		encoderPool.Put(encoder)
 	}
+}
+
+// AddString adds the field key with given string value to the encoder buffer.
+func (encoder *Encoder) AddString(key string, value string) {
+	encoder.AppendKey(key)
+	encoder.AppendString(value)
+}
+
+// AddBool adds the field key with given boolean value to the encoder buffer.
+func (encoder *Encoder) AddBool(key string, value bool) {
+	encoder.AppendKey(key)
+	encoder.AppendBool(value)
 }
 
 // NewEncoder creates a new JSON Encoder.
