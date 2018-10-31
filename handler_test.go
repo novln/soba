@@ -180,4 +180,25 @@ func TestHandler_NewLogger(t *testing.T) {
 		}
 	}
 
+	//
+	// Testing auth logger
+	//
+	{
+		// TODO
+	}
+
+	//
+	// Testing views logger
+	//
+	{
+		// TODO
+	}
+
+	//
+	// Testing random logger
+	//
+	{
+		// TODO
+	}
+
 }
