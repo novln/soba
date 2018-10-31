@@ -2,6 +2,8 @@ package json
 
 import (
 	"sync"
+
+	"github.com/novln/soba/encoder"
 )
 
 // Source forked from https://github.com/uber-go/zap and from https://github.com/rs/zerolog
@@ -29,16 +31,14 @@ func (encoder *Encoder) Close() {
 	}
 }
 
-// AddString adds the field key with given string value to the encoder buffer.
-func (encoder *Encoder) AddString(key string, value string) {
-	encoder.AppendKey(key)
-	encoder.AppendString(value)
-}
-
-// AddBool adds the field key with given boolean value to the encoder buffer.
-func (encoder *Encoder) AddBool(key string, value bool) {
-	encoder.AppendKey(key)
-	encoder.AppendBool(value)
+// Open start the initialization of a new instance/object.
+// The given callback is used to provides object properties.
+// Also, the encoder content buffer is finished by a line break.
+func (encoder *Encoder) Open(handler func(encoder encoder.Encoder)) {
+	encoder.AppendBeginMarker()
+	handler(encoder)
+	encoder.AppendEndMarker()
+	encoder.AppendLineBreak()
 }
 
 // NewEncoder creates a new JSON Encoder.
@@ -56,3 +56,6 @@ var encoderPool = &sync.Pool{
 		}
 	},
 }
+
+// Ensure Encoder implements encoder.Encoder interface at compile time.
+var _ encoder.Encoder = &Encoder{}

@@ -8,6 +8,8 @@ import (
 	"sync"
 
 	"github.com/pkg/errors"
+
+	"github.com/novln/soba/encoder/json"
 )
 
 const (
@@ -66,11 +68,15 @@ func (appender *ConsoleAppender) Name() string {
 
 // Write receives a log entry.
 func (appender *ConsoleAppender) Write(entry Entry) {
+	encoder := json.NewEncoder()
+	defer encoder.Close()
+
+	buffer := WriteEntry(entry, encoder)
+
 	appender.mutex.Lock()
 	defer appender.mutex.Unlock()
 
-	// TODO Use encoder to write a binary buffer and flush it on io.Writer...
-	fmt.Println(entry)
+	appender.out.Write(buffer)
 }
 
 // TODO (novln): Add a rolling system to FileAppender

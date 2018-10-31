@@ -78,6 +78,20 @@ func NewEntry(name string, level Level, message string, fields ...[]Field) *Entr
 	return entry
 }
 
+// WriteEntry writes entry informations on the given encoder.
+func WriteEntry(entry Entry, encoder Encoder) []byte {
+	encoder.Open(func(encoder Encoder) {
+		encoder.AddString("logger", entry.name)
+		encoder.AddTime("time", time.Unix(entry.unix, 0).UTC())
+		encoder.AddStringer("level", entry.level)
+		encoder.AddString("message", entry.message)
+		for _, field := range entry.fields {
+			field.Write(encoder)
+		}
+	})
+	return encoder.Bytes()
+}
+
 // An entry pool to reduce memory allocation pressure.
 var entryPool = &sync.Pool{
 	New: func() interface{} {
