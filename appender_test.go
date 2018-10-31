@@ -195,6 +195,9 @@ func TestAppender_Write(t *testing.T) {
 	if appender.entries[0] != expected {
 		t.Fatalf("Unexpected entry #1: '%s' should be '%s'", appender.entries[0], expected)
 	}
+	if appender.Log(0) != appender.entries[0] {
+		t.Fatalf("Unexpected entry #1: '%s' should be '%s'", appender.Log(0), appender.entries[0])
+	}
 	if appender.times[0].Unix() < before.Unix() {
 		t.Fatalf("Unexpected entry timestamp: %d should be greater than or equals to %d",
 			appender.times[0].Unix(), before.Unix())
@@ -203,9 +206,13 @@ func TestAppender_Write(t *testing.T) {
 		t.Fatalf("Unexpected entry timestamp: %d should be less than or equals to %d",
 			appender.times[0].Unix(), after.Unix())
 	}
+	if appender.Time(0) != appender.times[0] {
+		t.Fatalf("Unexpected entry timestamp: %d should be equals to %d",
+			appender.Time(0).Unix(), appender.times[0].Unix())
+	}
 }
 
-// Test appender name definition for futher test.
+// Test appender name definition for other tests.
 func TestAppender_Name(t *testing.T) {
 	appender := NewTestAppender("foobar")
 	expected := "foobar"
