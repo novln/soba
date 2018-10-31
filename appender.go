@@ -76,7 +76,7 @@ func (appender *ConsoleAppender) Write(entry Entry) {
 	appender.mutex.Lock()
 	defer appender.mutex.Unlock()
 
-	appender.out.Write(buffer)
+	_, _ = appender.out.Write(buffer)
 }
 
 // TODO (novln): Add a rolling system to FileAppender
