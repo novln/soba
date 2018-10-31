@@ -65,12 +65,10 @@ func TestEntry_New(t *testing.T) {
 	message := "Pellentesque non massa libero. Praesent a semper orci."
 	before := time.Now()
 
-	entry := soba.NewEntry(name, level, message,
-		[]soba.Field{
-			soba.Bool("flower", true),
-			soba.Time("stream", time.Now()),
-		},
-	)
+	entry := soba.NewEntry(name, level, message, []soba.Field{
+		soba.Bool("flower", true),
+		soba.Time("stream", time.Now()),
+	})
 	defer entry.Flush()
 
 	after := time.Now()

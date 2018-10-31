@@ -1,6 +1,7 @@
 package soba_test
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 
@@ -88,7 +89,7 @@ func TestHandler_NewLogger(t *testing.T) {
 
 	err := soba.RegisterAppenders(apiAppender, dbAppender, authAppender, stdoutAppender)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("Unexpected error: %+v", err)
 	}
 
 	handler, err := soba.Create(&soba.Config{
@@ -101,7 +102,7 @@ func TestHandler_NewLogger(t *testing.T) {
 		},
 		Loggers: map[string]soba.ConfigLogger{
 			"components.auth": {
-				Level:    "info",
+				Level:    "debug",
 				Additive: true,
 				Appenders: []string{
 					"auth-log",
@@ -124,10 +125,59 @@ func TestHandler_NewLogger(t *testing.T) {
 		},
 	})
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("Unexpected error: %+v", err)
 	}
-	_ = handler
 
-	t.Fatal("Finish this unit test")
+	//
+	// Testing repositories loggers
+	//
+	{
+
+		handler.New("repositories.users").
+			Info("User created", soba.String("id", "01CV5FN4JF1STZMYDJWMGQR68W"))
+		handler.New("repositories.users").
+			Debug("Transaction executed", soba.Bool("commit", true))
+		handler.New("repositories.users").
+			Info("User created", soba.String("id", "01CV5FP35H929DBQ3KJ6JRST3W"))
+		handler.New("repositories.users").
+			Debug("Transaction executed", soba.Bool("commit", true))
+		handler.New("repositories.organizations").
+			Info("Organization created", soba.String("id", "01CV5H2TRFXDHVSTCK5BJVQ1TK"))
+		handler.New("repositories.organizations").
+			Debug("Transaction executed", soba.Bool("commit", true))
+
+		if dbAppender.Size() != 3 {
+			t.Fatalf("Unexpected number of entries for db appender: %d should be %d", dbAppender.Size(), 3)
+		}
+		if stdoutAppender.Size() != 0 {
+			t.Fatalf("Unexpected number of entries for stdout appender: %d should be %d", stdoutAppender.Size(), 0)
+		}
+
+		expected1 := fmt.Sprint(
+			`{"logger":"repositories.users","level":"info",`,
+			`"message":"User created","id":"01CV5FN4JF1STZMYDJWMGQR68W"}`,
+			"\n",
+		)
+		expected2 := fmt.Sprint(
+			`{"logger":"repositories.users","level":"info",`,
+			`"message":"User created","id":"01CV5FP35H929DBQ3KJ6JRST3W"}`,
+			"\n",
+		)
+		expected3 := fmt.Sprint(
+			`{"logger":"repositories.organizations","level":"info",`,
+			`"message":"Organization created","id":"01CV5H2TRFXDHVSTCK5BJVQ1TK"}`,
+			"\n",
+		)
+
+		if dbAppender.Log(0) != expected1 {
+			t.Fatalf("Unexpected log message: '%s' should be '%s'", dbAppender.Log(0), expected1)
+		}
+		if dbAppender.Log(1) != expected2 {
+			t.Fatalf("Unexpected log message: '%s' should be '%s'", dbAppender.Log(1), expected2)
+		}
+		if dbAppender.Log(2) != expected3 {
+			t.Fatalf("Unexpected log message: '%s' should be '%s'", dbAppender.Log(2), expected3)
+		}
+	}
 
 }

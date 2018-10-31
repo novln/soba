@@ -1,6 +1,7 @@
 package json_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/novln/soba"
@@ -62,7 +63,7 @@ func TestJSON_Encoder_Open(t *testing.T) {
 		encoder := json.NewEncoder()
 		defer encoder.Close()
 
-		expected := `{"foobar":42}` + "\n"
+		expected := fmt.Sprint(`{"foobar":42}`, "\n")
 
 		encoder.Open(func(e libencoder.Encoder) {
 			e.AddInt("foobar", 42)

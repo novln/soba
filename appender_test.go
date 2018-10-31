@@ -6,12 +6,14 @@ import (
 	"time"
 
 	"github.com/novln/soba"
+	"github.com/novln/soba/encoder/json"
 )
 
 // TestAppender is an appender for unit test.
 type TestAppender struct {
 	name    string
-	entries []soba.Entry
+	entries []string
+	times   []time.Time
 }
 
 func (appender *TestAppender) Name() string {
@@ -19,7 +21,39 @@ func (appender *TestAppender) Name() string {
 }
 
 func (appender *TestAppender) Write(entry soba.Entry) {
-	appender.entries = append(appender.entries, entry)
+	encoder := json.NewEncoder()
+	defer encoder.Close()
+
+	encoder.Open(func(encoder soba.Encoder) {
+		encoder.AddString("logger", entry.Name())
+		encoder.AddStringer("level", entry.Level())
+		encoder.AddString("message", entry.Message())
+		for _, field := range entry.Fields() {
+			field.Write(encoder)
+		}
+	})
+
+	buffer := encoder.Bytes()
+
+	appender.entries = append(appender.entries, string(buffer))
+	appender.times = append(appender.times, time.Unix(entry.Unix(), 0).UTC())
+}
+
+func (appender *TestAppender) Clear() {
+	appender.entries = []string{}
+	appender.times = []time.Time{}
+}
+
+func (appender *TestAppender) Size() int {
+	return len(appender.entries)
+}
+
+func (appender *TestAppender) Log(index int) string {
+	return appender.entries[index]
+}
+
+func (appender *TestAppender) Time(index int) time.Time {
+	return appender.times[index]
 }
 
 // NewTestAppender creates a new TestAppender.
@@ -131,34 +165,52 @@ func TestAppender_IsNameValid(t *testing.T) {
 
 }
 
-// Test appender write operation.
+// Test appender write operation for other tests.
 func TestAppender_Write(t *testing.T) {
 	appender := NewTestAppender("foobar")
 	before := time.Now()
-	entry := soba.NewEntry("foobar.module.asm", soba.InfoLevel, "\\x67")
+	entry := soba.NewEntry("foobar.module.asm", soba.InfoLevel, "Invalid opcode", []soba.Field{
+		soba.Binary("opcode", []byte{0x67}),
+		soba.String("module", "bootloader"),
+	})
 	defer entry.Flush()
 	after := time.Now()
 
 	appender.Write(*entry)
 
+	expected := fmt.Sprint(
+		`{"logger":"foobar.module.asm","level":"info",`,
+		`"message":"Invalid opcode","opcode":"Zw==","module":"bootloader"}`,
+		"\n",
+	)
+
 	if len(appender.entries) != 1 {
-		t.Fatalf("Unexpected number of entries: %v should be %v", len(appender.entries), 1)
+		t.Fatalf("Unexpected number of entries: %d should be %d", len(appender.entries), 1)
 	}
-	if appender.entries[0].Name() != "foobar.module.asm" {
-		t.Fatalf("Unexpected entry name: %v should be %v", appender.entries[0].Name(), "foobar.module.asm")
+	if len(appender.times) != len(appender.entries) {
+		t.Fatalf("Unexpected number of entries timestamp: %d should be %d",
+			len(appender.times), len(appender.entries))
 	}
-	if appender.entries[0].Level() != soba.InfoLevel {
-		t.Fatalf("Unexpected entry message: %v should be %v", appender.entries[0].Level(), soba.InfoLevel)
+
+	if appender.entries[0] != expected {
+		t.Fatalf("Unexpected entry #1: '%s' should be '%s'", appender.entries[0], expected)
 	}
-	if appender.entries[0].Message() != "\\x67" {
-		t.Fatalf("Unexpected entry message: %v should be %v", appender.entries[0].Message(), "\\x67")
+	if appender.times[0].Unix() < before.Unix() {
+		t.Fatalf("Unexpected entry timestamp: %d should be greater than or equals to %d",
+			appender.times[0].Unix(), before.Unix())
 	}
-	if appender.entries[0].Unix() < before.Unix() {
-		t.Fatalf("Unexpected entry timestamp: %v should be greater than or equals to %v",
-			appender.entries[0].Unix(), before.Unix())
+	if appender.times[0].Unix() > after.Unix() {
+		t.Fatalf("Unexpected entry timestamp: %d should be less than or equals to %d",
+			appender.times[0].Unix(), after.Unix())
 	}
-	if appender.entries[0].Unix() > after.Unix() {
-		t.Fatalf("Unexpected entry timestamp: %v should be less than or equals to %v",
-			appender.entries[0].Unix(), after.Unix())
+}
+
+// Test appender name definition for futher test.
+func TestAppender_Name(t *testing.T) {
+	appender := NewTestAppender("foobar")
+	expected := "foobar"
+
+	if appender.Name() != expected {
+		t.Fatalf("Unexpected appender name: %s should be %s", appender.Name(), expected)
 	}
 }

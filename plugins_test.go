@@ -15,7 +15,7 @@ func TestPlugins_RegisterAppenders(t *testing.T) {
 
 	err := soba.RegisterAppenders(apiAppender, dbAppender, authAppender, stdoutAppender)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("Unexpected error: %+v", err)
 	}
 
 	invalidAppender := NewTestAppender("Notifier")
