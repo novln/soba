@@ -122,7 +122,7 @@ func getParentAppendersForLogger(conf *Config, handler *handler, hierarchy []str
 		}
 	}
 
-	return nil
+	return getLocalAppendersForLogger(conf.Root, handler, result)
 }
 
 func getLocalAppendersForLogger(conf ConfigLogger, handler *handler, result map[string]Appender) error {

@@ -170,21 +170,145 @@ func TestHandler_NewLogger(t *testing.T) {
 		)
 
 		if dbAppender.Log(0) != expected1 {
-			t.Fatalf("Unexpected log message: '%s' should be '%s'", dbAppender.Log(0), expected1)
+			t.Fatalf("Unexpected log message #1: '%s' should be '%s'", dbAppender.Log(0), expected1)
 		}
 		if dbAppender.Log(1) != expected2 {
-			t.Fatalf("Unexpected log message: '%s' should be '%s'", dbAppender.Log(1), expected2)
+			t.Fatalf("Unexpected log message #2: '%s' should be '%s'", dbAppender.Log(1), expected2)
 		}
 		if dbAppender.Log(2) != expected3 {
-			t.Fatalf("Unexpected log message: '%s' should be '%s'", dbAppender.Log(2), expected3)
+			t.Fatalf("Unexpected log message #3: '%s' should be '%s'", dbAppender.Log(2), expected3)
 		}
+
+		dbAppender.Clear()
+		stdoutAppender.Clear()
+
 	}
 
 	//
 	// Testing auth logger
 	//
 	{
-		// TODO
+
+		handler.New("components.auth").Info("User authentication has failed",
+			soba.String("id", "01CZBCXAM0S9VCMWSCAP0K5DQF"), soba.String("status", "failure"))
+		handler.New("components.auth").Debug("Increase authentication attempts",
+			soba.String("id", "01CZBCXAM0S9VCMWSCAP0K5DQF"), soba.Int("counter", 1))
+		handler.New("components.auth").Info("User authentication has failed",
+			soba.String("id", "01CZBCXAM0S9VCMWSCAP0K5DQF"), soba.String("status", "failure"))
+		handler.New("components.auth").Debug("Increase authentication attempts",
+			soba.String("id", "01CZBCXAM0S9VCMWSCAP0K5DQF"), soba.Int("counter", 2))
+		handler.New("components.auth").Info("User authentication has failed",
+			soba.String("id", "01CZBCXAM0S9VCMWSCAP0K5DQF"), soba.String("status", "failure"))
+		handler.New("components.auth").Debug("Increase authentication attempts",
+			soba.String("id", "01CZBCXAM0S9VCMWSCAP0K5DQF"), soba.Int("counter", 3))
+		handler.New("components.auth").Info("User authentication has succeeded",
+			soba.String("id", "01CZBCXAM0S9VCMWSCAP0K5DQF"), soba.String("status", "success"))
+		handler.New("components.auth").Debug("Reset authentication attempts",
+			soba.String("id", "01CZBCXAM0S9VCMWSCAP0K5DQF"), soba.Int("counter", 0))
+		handler.New("components.auth").Info("User authentication has succeeded",
+			soba.String("id", "01CZBD1326W8KJWE37WXZ2M6K0"), soba.String("status", "success"))
+
+		if authAppender.Size() != 9 {
+			t.Fatalf("Unexpected number of entries for auth appender: %d should be %d", authAppender.Size(), 9)
+		}
+		if stdoutAppender.Size() != 9 {
+			t.Fatalf("Unexpected number of entries for stdout appender: %d should be %d", stdoutAppender.Size(), 9)
+		}
+
+		expected1 := fmt.Sprint(
+			`{"logger":"components.auth","level":"info","message":"User authentication has failed",`,
+			`"id":"01CZBCXAM0S9VCMWSCAP0K5DQF","status":"failure"}`,
+			"\n",
+		)
+		expected2 := fmt.Sprint(
+			`{"logger":"components.auth","level":"debug","message":"Increase authentication attempts",`,
+			`"id":"01CZBCXAM0S9VCMWSCAP0K5DQF","counter":1}`,
+			"\n",
+		)
+		expected3 := fmt.Sprint(
+			`{"logger":"components.auth","level":"debug","message":"Increase authentication attempts",`,
+			`"id":"01CZBCXAM0S9VCMWSCAP0K5DQF","counter":2}`,
+			"\n",
+		)
+		expected4 := fmt.Sprint(
+			`{"logger":"components.auth","level":"debug","message":"Increase authentication attempts",`,
+			`"id":"01CZBCXAM0S9VCMWSCAP0K5DQF","counter":3}`,
+			"\n",
+		)
+		expected5 := fmt.Sprint(
+			`{"logger":"components.auth","level":"info","message":"User authentication has succeeded",`,
+			`"id":"01CZBCXAM0S9VCMWSCAP0K5DQF","status":"success"}`,
+			"\n",
+		)
+		expected6 := fmt.Sprint(
+			`{"logger":"components.auth","level":"debug","message":"Reset authentication attempts",`,
+			`"id":"01CZBCXAM0S9VCMWSCAP0K5DQF","counter":0}`,
+			"\n",
+		)
+		expected7 := fmt.Sprint(
+			`{"logger":"components.auth","level":"info","message":"User authentication has succeeded",`,
+			`"id":"01CZBD1326W8KJWE37WXZ2M6K0","status":"success"}`,
+			"\n",
+		)
+
+		if authAppender.Log(0) != expected1 {
+			t.Fatalf("Unexpected log message #1: '%s' should be '%s'", authAppender.Log(0), expected1)
+		}
+		if stdoutAppender.Log(0) != expected1 {
+			t.Fatalf("Unexpected log message #1: '%s' should be '%s'", stdoutAppender.Log(0), expected1)
+		}
+		if authAppender.Log(1) != expected2 {
+			t.Fatalf("Unexpected log message #2: '%s' should be '%s'", authAppender.Log(1), expected2)
+		}
+		if stdoutAppender.Log(1) != expected2 {
+			t.Fatalf("Unexpected log message #2: '%s' should be '%s'", stdoutAppender.Log(1), expected2)
+		}
+		if authAppender.Log(2) != expected1 {
+			t.Fatalf("Unexpected log message #3: '%s' should be '%s'", authAppender.Log(2), expected1)
+		}
+		if stdoutAppender.Log(2) != expected1 {
+			t.Fatalf("Unexpected log message #3: '%s' should be '%s'", stdoutAppender.Log(2), expected1)
+		}
+		if authAppender.Log(3) != expected3 {
+			t.Fatalf("Unexpected log message #4: '%s' should be '%s'", authAppender.Log(3), expected3)
+		}
+		if stdoutAppender.Log(3) != expected3 {
+			t.Fatalf("Unexpected log message #4: '%s' should be '%s'", stdoutAppender.Log(3), expected3)
+		}
+		if authAppender.Log(4) != expected1 {
+			t.Fatalf("Unexpected log message #5: '%s' should be '%s'", authAppender.Log(4), expected1)
+		}
+		if stdoutAppender.Log(4) != expected1 {
+			t.Fatalf("Unexpected log message #5: '%s' should be '%s'", stdoutAppender.Log(4), expected1)
+		}
+		if authAppender.Log(5) != expected4 {
+			t.Fatalf("Unexpected log message #6: '%s' should be '%s'", authAppender.Log(5), expected4)
+		}
+		if stdoutAppender.Log(5) != expected4 {
+			t.Fatalf("Unexpected log message #6: '%s' should be '%s'", stdoutAppender.Log(5), expected4)
+		}
+		if authAppender.Log(6) != expected5 {
+			t.Fatalf("Unexpected log message #7: '%s' should be '%s'", authAppender.Log(6), expected5)
+		}
+		if stdoutAppender.Log(6) != expected5 {
+			t.Fatalf("Unexpected log message #7: '%s' should be '%s'", stdoutAppender.Log(6), expected5)
+		}
+		if authAppender.Log(7) != expected6 {
+			t.Fatalf("Unexpected log message #8: '%s' should be '%s'", authAppender.Log(7), expected6)
+		}
+		if stdoutAppender.Log(7) != expected6 {
+			t.Fatalf("Unexpected log message #8: '%s' should be '%s'", stdoutAppender.Log(7), expected6)
+		}
+		if authAppender.Log(8) != expected7 {
+			t.Fatalf("Unexpected log message #9: '%s' should be '%s'", authAppender.Log(8), expected7)
+		}
+		if stdoutAppender.Log(8) != expected7 {
+			t.Fatalf("Unexpected log message #9: '%s' should be '%s'", stdoutAppender.Log(8), expected7)
+		}
+
+		authAppender.Clear()
+		stdoutAppender.Clear()
+
 	}
 
 	//
