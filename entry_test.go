@@ -8,6 +8,7 @@ import (
 	random "github.com/Pallinder/go-randomdata"
 
 	"github.com/novln/soba"
+	"github.com/novln/soba/encoder/json"
 )
 
 // Benchmark allocation of new Entry.
@@ -58,6 +59,66 @@ func BenchmarkEntry_NewEntry(b *testing.B) {
 	})
 }
 
+// Benchmark allocation of writing Entry.
+func BenchmarkEntry_WriteEntry(b *testing.B) {
+	list := []*soba.Entry{}
+
+	number := random.Number(100, 500)
+	for i := 0; i < number; i++ {
+		levels := []string{}
+		for y := 0; y < random.Number(1, 10); y++ {
+			if (y % 2) == 0 {
+				levels = append(levels, strings.ToLower(random.Noun()))
+			} else {
+				levels = append(levels, strings.ToLower(random.Adjective()))
+			}
+		}
+		name := strings.Join(levels, ".")
+		message := random.Paragraph()
+		fields := []soba.Field{}
+		for y := 0; y < random.Number(0, 20); y++ {
+			if random.Number(0, 2) == 0 {
+				fields = append(fields, soba.String(random.Noun(), random.Letters(20)))
+			} else {
+				fields = append(fields, soba.String(random.Adjective(), random.Letters(20)))
+			}
+		}
+		entry := soba.NewEntry(name, soba.InfoLevel, message, fields)
+		list = append(list, entry)
+	}
+
+	max := len(list)
+	encoder := NewTestEncoder()
+	defer encoder.Close()
+
+	b.ResetTimer()
+	b.Run("no-encoder", func(b *testing.B) {
+		b.RunParallel(func(pb *testing.PB) {
+			i := 0
+			var e *soba.Entry
+			for pb.Next() {
+				i = (i + 1) % max
+				e = list[i]
+				soba.WriteEntry(e, encoder)
+			}
+		})
+	})
+	b.Run("json-encoder", func(b *testing.B) {
+		b.RunParallel(func(pb *testing.PB) {
+			i := 0
+			var e *soba.Entry
+			for pb.Next() {
+				encoder := json.NewEncoder()
+				i = (i + 1) % max
+				e = list[i]
+				soba.WriteEntry(e, encoder)
+				encoder.Close()
+			}
+		})
+	})
+
+}
+
 // Test creation of new entry.
 func TestEntry_New(t *testing.T) {
 	name := "spectrum"
@@ -67,7 +128,7 @@ func TestEntry_New(t *testing.T) {
 
 	entry := soba.NewEntry(name, level, message, []soba.Field{
 		soba.Bool("flower", true),
-		soba.Time("stream", time.Now()),
+		soba.Int64("stream", 1545492862),
 	})
 	defer entry.Flush()
 
@@ -93,15 +154,16 @@ func TestEntry_New(t *testing.T) {
 	if len(entry.Fields()) != 2 {
 		t.Fatalf(`Unexpected result for "fields": it should have "%d" fields, not "%d"`, 2, len(entry.Fields()))
 	}
-	if entry.Fields()[0].Name() != "flower" {
-		t.Fatalf(`Unexpected result for "fields" at position 0: it should have "%s" as name, not "%s"`,
-			"flower", entry.Fields()[0].Name())
+	f0 := DebugField(entry.Fields()[0])
+	if f0 != `"flower":true` {
+		t.Fatalf(`Unexpected result for "fields" at position 0: it should be "%s", not "%s"`,
+			`"flower":true`, f0)
 	}
-	if entry.Fields()[1].Name() != "stream" {
-		t.Fatalf(`Unexpected result for "fields" at position 1: it should have "%s" as name, not "%s"`,
-			"stream", entry.Fields()[1].Name())
+	f1 := DebugField(entry.Fields()[1])
+	if f1 != `"stream":1545492862` {
+		t.Fatalf(`Unexpected result for "fields" at position 1: it should be "%s", not "%s"`,
+			`"stream":1545492862`, f1)
 	}
-	// TODO (novln): Check content of fields ?
 }
 
 // Test entry in case of a duplicate name in fields.
@@ -125,21 +187,24 @@ func TestEntry_DuplicateFieldName(t *testing.T) {
 	if len(entry.Fields()) != 4 {
 		t.Fatalf(`Unexpected result for "fields": it should have "%d" fields, not "%d"`, 4, len(entry.Fields()))
 	}
-	if entry.Fields()[0].Name() != "silver" {
-		t.Fatalf(`Unexpected result for "fields" at position 0: it should have "%s" as name, not "%s"`,
-			"silver", entry.Fields()[0].Name())
+	f0 := DebugField(entry.Fields()[0])
+	if f0 != `"silver":4` {
+		t.Fatalf(`Unexpected result for "fields" at position 0: it should be "%s", not "%s"`,
+			`"silver":4`, f0)
 	}
-	if entry.Fields()[1].Name() != "chrome" {
-		t.Fatalf(`Unexpected result for "fields" at position 1: it should have "%s" as name, not "%s"`,
-			"chrome", entry.Fields()[1].Name())
+	f1 := DebugField(entry.Fields()[1])
+	if f1 != `"chrome":2` {
+		t.Fatalf(`Unexpected result for "fields" at position 1: it should be "%s", not "%s"`,
+			`"chrome":2`, f1)
 	}
-	if entry.Fields()[2].Name() != "iron" {
-		t.Fatalf(`Unexpected result for "fields" at position 1: it should have "%s" as name, not "%s"`,
-			"iron", entry.Fields()[2].Name())
+	f2 := DebugField(entry.Fields()[2])
+	if f2 != `"iron":5` {
+		t.Fatalf(`Unexpected result for "fields" at position 2: it should be "%s", not "%s"`,
+			`"iron":5`, f2)
 	}
-	if entry.Fields()[3].Name() != "quartz" {
-		t.Fatalf(`Unexpected result for "fields" at position 1: it should have "%s" as name, not "%s"`,
-			"quartz", entry.Fields()[3].Name())
+	f3 := DebugField(entry.Fields()[3])
+	if f3 != `"quartz":6` {
+		t.Fatalf(`Unexpected result for "fields" at position 3: it should be "%s", not "%s"`,
+			`"quartz":6`, f3)
 	}
-	// TODO (novln): Check content of fields ?
 }

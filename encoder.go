@@ -4,6 +4,8 @@ import (
 	"github.com/novln/soba/encoder"
 )
 
+// Aliasing from github.com/novln/soba/encoder package to avoid circular imports.
+
 // Encoder is a strongly-typed, encoding-agnostic interface for adding array, map or struct-like object to the
 // logging context.
 // Also, be advised that Encoder aren't safe for concurrent use.

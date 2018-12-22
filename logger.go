@@ -91,7 +91,7 @@ func (logger Logger) write(level Level, message string, fields []Field) {
 	entry := NewEntry(logger.name, level, message, logger.fields, fields)
 	defer entry.Flush()
 	for i := range logger.appenders {
-		logger.appenders[i].Write(*entry)
+		logger.appenders[i].Write(entry)
 	}
 }
 

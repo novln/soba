@@ -25,7 +25,7 @@ type Appender interface {
 	// Name returns Appender name.
 	Name() string
 	// Write receives a log entry.
-	Write(entry Entry)
+	Write(entry *Entry)
 }
 
 // IsAppenderNameValid verify that a Appender name has a valid format.
@@ -67,7 +67,7 @@ func (appender *ConsoleAppender) Name() string {
 }
 
 // Write receives a log entry.
-func (appender *ConsoleAppender) Write(entry Entry) {
+func (appender *ConsoleAppender) Write(entry *Entry) {
 	encoder := json.NewEncoder()
 	defer encoder.Close()
 
@@ -92,7 +92,7 @@ func (appender *FileAppender) Name() string {
 }
 
 // Write receives a log entry.
-func (appender *FileAppender) Write(entry Entry) {
+func (appender *FileAppender) Write(entry *Entry) {
 	// TODO
 	fmt.Println(entry)
 }

@@ -20,7 +20,7 @@ func (appender *TestAppender) Name() string {
 	return appender.name
 }
 
-func (appender *TestAppender) Write(entry soba.Entry) {
+func (appender *TestAppender) Write(entry *soba.Entry) {
 	encoder := json.NewEncoder()
 	defer encoder.Close()
 
@@ -166,49 +166,96 @@ func TestAppender_IsNameValid(t *testing.T) {
 }
 
 // Test appender write operation for other tests.
+// nolint: gocyclo
 func TestAppender_Write(t *testing.T) {
 	appender := NewTestAppender("foobar")
-	before := time.Now()
-	entry := soba.NewEntry("foobar.module.asm", soba.InfoLevel, "Invalid opcode", []soba.Field{
-		soba.Binary("opcode", []byte{0x67}),
-		soba.String("module", "bootloader"),
-	})
-	defer entry.Flush()
-	after := time.Now()
 
-	appender.Write(*entry)
+	{
+		before := time.Now()
+		entry := soba.NewEntry("foobar.module.asm", soba.WarnLevel, "Invalid opcode", []soba.Field{
+			soba.Binary("opcode", []byte{0x67}),
+			soba.String("module", "bootloader"),
+		})
+		defer entry.Flush()
+		after := time.Now()
 
-	expected := fmt.Sprint(
-		`{"logger":"foobar.module.asm","level":"info",`,
-		`"message":"Invalid opcode","opcode":"Zw==","module":"bootloader"}`,
-		"\n",
-	)
+		appender.Write(entry)
 
-	if len(appender.entries) != 1 {
-		t.Fatalf("Unexpected number of entries: %d should be %d", len(appender.entries), 1)
-	}
-	if len(appender.times) != len(appender.entries) {
-		t.Fatalf("Unexpected number of entries timestamp: %d should be %d",
-			len(appender.times), len(appender.entries))
-	}
+		expected := fmt.Sprint(
+			`{"logger":"foobar.module.asm","level":"warning",`,
+			`"message":"Invalid opcode","opcode":"Zw==","module":"bootloader"}`,
+			"\n",
+		)
 
-	if appender.entries[0] != expected {
-		t.Fatalf("Unexpected entry #1: '%s' should be '%s'", appender.entries[0], expected)
+		if len(appender.entries) != 1 {
+			t.Fatalf("Unexpected number of entries: %d should be %d", len(appender.entries), 1)
+		}
+		if len(appender.times) != len(appender.entries) {
+			t.Fatalf("Unexpected number of entries timestamp: %d should be %d",
+				len(appender.times), len(appender.entries))
+		}
+		if appender.entries[0] != expected {
+			t.Fatalf("Unexpected entry #1: '%s' should be '%s'", appender.entries[0], expected)
+		}
+		if appender.Log(0) != appender.entries[0] {
+			t.Fatalf("Unexpected entry #1: '%s' should be '%s'", appender.Log(0), appender.entries[0])
+		}
+		if appender.times[0].Unix() < before.Unix() {
+			t.Fatalf("Unexpected entry timestamp: %d should be greater than or equals to %d",
+				appender.times[0].Unix(), before.Unix())
+		}
+		if appender.times[0].Unix() > after.Unix() {
+			t.Fatalf("Unexpected entry timestamp: %d should be less than or equals to %d",
+				appender.times[0].Unix(), after.Unix())
+		}
+		if appender.Time(0) != appender.times[0] {
+			t.Fatalf("Unexpected entry timestamp: %d should be equals to %d",
+				appender.Time(0).Unix(), appender.times[0].Unix())
+		}
 	}
-	if appender.Log(0) != appender.entries[0] {
-		t.Fatalf("Unexpected entry #1: '%s' should be '%s'", appender.Log(0), appender.entries[0])
-	}
-	if appender.times[0].Unix() < before.Unix() {
-		t.Fatalf("Unexpected entry timestamp: %d should be greater than or equals to %d",
-			appender.times[0].Unix(), before.Unix())
-	}
-	if appender.times[0].Unix() > after.Unix() {
-		t.Fatalf("Unexpected entry timestamp: %d should be less than or equals to %d",
-			appender.times[0].Unix(), after.Unix())
-	}
-	if appender.Time(0) != appender.times[0] {
-		t.Fatalf("Unexpected entry timestamp: %d should be equals to %d",
-			appender.Time(0).Unix(), appender.times[0].Unix())
+	{
+		before := time.Now()
+		entry := soba.NewEntry("foobar.module.asm", soba.DebugLevel, "Jump stack", []soba.Field{
+			soba.Uint64("from", 0x23456F34),
+			soba.Uint64("to", 0x6723F4AB),
+			soba.String("module", "cryptofs"),
+		})
+		defer entry.Flush()
+		after := time.Now()
+
+		appender.Write(entry)
+
+		expected := fmt.Sprint(
+			`{"logger":"foobar.module.asm","level":"debug",`,
+			`"message":"Jump stack","from":591753012,"to":1730409643,"module":"cryptofs"}`,
+			"\n",
+		)
+
+		if len(appender.entries) != 2 {
+			t.Fatalf("Unexpected number of entries: %d should be %d", len(appender.entries), 2)
+		}
+		if len(appender.times) != len(appender.entries) {
+			t.Fatalf("Unexpected number of entries timestamp: %d should be %d",
+				len(appender.times), len(appender.entries))
+		}
+		if appender.entries[1] != expected {
+			t.Fatalf("Unexpected entry #2: '%s' should be '%s'", appender.entries[1], expected)
+		}
+		if appender.Log(1) != appender.entries[1] {
+			t.Fatalf("Unexpected entry #1: '%s' should be '%s'", appender.Log(1), appender.entries[1])
+		}
+		if appender.times[1].Unix() < before.Unix() {
+			t.Fatalf("Unexpected entry timestamp: %d should be greater than or equals to %d",
+				appender.times[1].Unix(), before.Unix())
+		}
+		if appender.times[1].Unix() > after.Unix() {
+			t.Fatalf("Unexpected entry timestamp: %d should be less than or equals to %d",
+				appender.times[1].Unix(), after.Unix())
+		}
+		if appender.Time(1) != appender.times[1] {
+			t.Fatalf("Unexpected entry timestamp: %d should be equals to %d",
+				appender.Time(1).Unix(), appender.times[1].Unix())
+		}
 	}
 }
 

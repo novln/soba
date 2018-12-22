@@ -79,7 +79,7 @@ func NewEntry(name string, level Level, message string, fields ...[]Field) *Entr
 }
 
 // WriteEntry writes entry informations on the given encoder.
-func WriteEntry(entry Entry, encoder Encoder) []byte {
+func WriteEntry(entry *Entry, encoder Encoder) []byte {
 	encoder.Open(func(encoder Encoder) {
 		encoder.AddString("logger", entry.name)
 		encoder.AddTime("time", time.Unix(entry.unix, 0).UTC())
