@@ -44,6 +44,7 @@ type ArrayEncoder interface {
 	AppendDuration(value time.Duration)
 	AppendBool(value bool)
 	AppendBinary(value []byte)
+	AppendNull()
 }
 
 // ObjectEncoder is a strongly-typed, encoding-agnostic interface for adding map or struct-like object to the
@@ -88,6 +89,7 @@ type ObjectEncoder interface {
 	AddBool(key string, value bool)
 	AddBools(key string, values []bool)
 	AddBinary(key string, value []byte)
+	AddNull(key string)
 }
 
 // ObjectMarshaler define how an object can register itself in the logging context.

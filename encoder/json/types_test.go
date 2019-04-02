@@ -507,6 +507,36 @@ func TestJSON_Encoder_AppendBinary(t *testing.T) {
 	}
 }
 
+func TestJSON_Encoder_AppendNull(t *testing.T) {
+	{
+		encoder := json.NewEncoder()
+		defer encoder.Close()
+
+		expected := `null`
+
+		encoder.AppendNull()
+		buffer := encoder.Bytes()
+
+		if expected != string(buffer) {
+			t.Fatalf("Unexpected buffer: '%s' should be '%s'", string(buffer), expected)
+		}
+	}
+	{
+		encoder := json.NewEncoder()
+		defer encoder.Close()
+
+		expected := `null,null`
+
+		encoder.AppendNull()
+		encoder.AppendNull()
+		buffer := encoder.Bytes()
+
+		if expected != string(buffer) {
+			t.Fatalf("Unexpected buffer: '%s' should be '%s'", string(buffer), expected)
+		}
+	}
+}
+
 func TestJSON_Encoder_AppendArray(t *testing.T) {
 	{
 		encoder := json.NewEncoder()
@@ -2458,6 +2488,22 @@ func TestJSON_Encoder_AddBinary(t *testing.T) {
 		expected := `"message":"SGVsbG8gd29ybGQ="`
 
 		encoder.AddBinary("message", []byte("Hello world"))
+		buffer := encoder.Bytes()
+
+		if expected != string(buffer) {
+			t.Fatalf("Unexpected buffer: '%s' should be '%s'", string(buffer), expected)
+		}
+	}
+}
+
+func TestJSON_Encoder_AddNull(t *testing.T) {
+	{
+		encoder := json.NewEncoder()
+		defer encoder.Close()
+
+		expected := `"deleted_at":null`
+
+		encoder.AddNull("deleted_at")
 		buffer := encoder.Bytes()
 
 		if expected != string(buffer) {

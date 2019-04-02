@@ -316,6 +316,12 @@ func (encoder *Encoder) AddBinary(key string, value []byte) {
 	encoder.AppendBinary(value)
 }
 
+// AddNull adds the field key as a null value to the encoder buffer.
+func (encoder *Encoder) AddNull(key string) {
+	encoder.AppendKey(key)
+	encoder.AppendNull()
+}
+
 // AppendArray converts the input array marshaler and appends the encoded value to the encoder buffer.
 func (encoder *Encoder) AppendArray(value encoder.ArrayMarshaler) {
 	encoder.AppendElementSeparator()
@@ -433,6 +439,12 @@ func (encoder *Encoder) AppendBinary(value []byte) {
 	b64.Encode(buffer, value)
 	encoder.safeAddByteString(buffer)
 	encoder.buffer = append(encoder.buffer, '"')
+}
+
+// AppendNull appends a null value to the encoder buffer.
+func (encoder *Encoder) AppendNull() {
+	encoder.AppendElementSeparator()
+	encoder.buffer = append(encoder.buffer, 'n', 'u', 'l', 'l')
 }
 
 // appendFloat converts a number and appends it to the encoder buffer.
