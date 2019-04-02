@@ -98,6 +98,8 @@ func (encoder *TestEncoder) AddBools(key string, values []bool) {}
 
 func (encoder *TestEncoder) AddBinary(key string, value []byte) {}
 
+func (encoder *TestEncoder) AddNull(key string) {}
+
 func (encoder *TestEncoder) AppendArray(value encoder.ArrayMarshaler) {}
 
 func (encoder *TestEncoder) AppendObject(value encoder.ObjectMarshaler) {}
@@ -135,6 +137,8 @@ func (encoder *TestEncoder) AppendTime(value time.Time) {}
 func (encoder *TestEncoder) AppendDuration(value time.Duration) {}
 
 func (encoder *TestEncoder) AppendBinary(value []byte) {}
+
+func (encoder *TestEncoder) AppendNull() {}
 
 // NewTestEncoder creates a new TestEncoder.
 func NewTestEncoder() *TestEncoder {
