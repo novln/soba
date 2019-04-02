@@ -81,6 +81,7 @@ func BenchmarkHandler_NewLogger(b *testing.B) {
 }
 
 // Test hierarchy of loggers.
+// nolint: gocyclo
 func TestHandler_NewLogger(t *testing.T) {
 	apiAppender := NewTestAppender("api-log")
 	dbAppender := NewTestAppender("db-log")

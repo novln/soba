@@ -45,37 +45,46 @@ linters-settings:
 
 linters:
   enable:
-    - megacheck
-    - govet
-    - errcheck
-    - gas
-    - structcheck
-    - varcheck
-    - ineffassign
     - deadcode
-    - typecheck
-    - golint
-    - interfacer
-    - unconvert
+    - errcheck
+    - goconst
+    - gocritic
     - gocyclo
     - gofmt
-    - misspell
+    - gofmt
+    - golint
+    - gosec
+    - gosimple
+    - govet
+    - ineffassign
+    - interfacer
     - lll
+    - maligned
+    - megacheck
+    - misspell
     - nakedret
+    - prealloc
+    - scopelint
+    - staticcheck
+    - structcheck
+    - typecheck
+    - unconvert
+    - unused
+    - varcheck
   enable-all: false
   disable:
     - depguard
-    - prealloc
     - dupl
-    - maligned
   disable-all: false
 
 
 issues:
   exclude-use-default: false
+  exclude-rules:
+    - path: encoder/json/types_test.go
+      linters:
+        - goconst
   max-per-linter: 1024
   max-same: 1024
   exclude:
     - "G304"
-    - "G101"
-    - "G104"
