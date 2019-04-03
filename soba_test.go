@@ -8,4 +8,4 @@ import (
 var gl soba.Logger
 
 // Global encoder for benchmark, used to avoid compiler optimization.
-var ge soba.Encoder
+// var ge soba.Encoder
