@@ -3,7 +3,6 @@
 [![Documentation][godoc-img]][godoc-url]
 ![License][license-img]
 [![Build Status][circle-img]][circle-url]
-[![Coverage Status][coverage-img]][coverage-url]
 [![Report Status][goreport-img]][goreport-url]
 
 A highly configurable logging framework.
@@ -81,8 +80,6 @@ This is Free Software, released under the [`MIT License`][license-url].
 [license-url]: LICENSE
 [circle-url]: https://circleci.com/gh/novln/soba/tree/master
 [circle-img]: https://circleci.com/gh/novln/soba.svg?style=shield&circle-token=253294d3873e767a02475e5b83533b683b2d401f
-[coverage-url]: https://codecov.io/gh/novln/soba
-[coverage-img]: https://codecov.io/gh/novln/soba/branch/master/graph/badge.svg
 [goreport-url]: https://goreportcard.com/report/novln/soba
 [goreport-img]: https://goreportcard.com/badge/novln/soba
 [zap-url]: https://github.com/uber-go/zap
