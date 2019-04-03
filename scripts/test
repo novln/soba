@@ -1,9 +1,17 @@
 #!/bin/bash
 
+if [[ ! -x "$(command -v go)" ]]; then
+  echo >&2 "go runtime is required: https://golang.org/doc/install"
+  echo >&2 "You can use scripts/go-wrapper $0 to use go in a docker container."
+  exit 1
+fi
+
+GOPATH=$(go env GOPATH)
+
 SOURCE_DIRECTORY=$(dirname "${BASH_SOURCE[0]}")
 cd "${SOURCE_DIRECTORY}/.."
 
-if [ -z "$1" ]; then
+if [[ -z "$1" ]]; then
     go test -v -count=1 -p 1 -race $(go list ./... | grep -v -E '\/(testdata|examples)\/')
 else
     go test -v -count=1 -p 1 -race $@
