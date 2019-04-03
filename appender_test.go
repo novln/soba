@@ -24,7 +24,7 @@ func (appender *TestAppender) Write(entry *soba.Entry) {
 	encoder := json.NewEncoder()
 	defer encoder.Close()
 
-	encoder.Open(func(encoder soba.Encoder) {
+	buffer := encoder.Encode(func(encoder soba.Encoder) {
 		encoder.AddString("logger", entry.Name())
 		encoder.AddStringer("level", entry.Level())
 		encoder.AddString("message", entry.Message())
@@ -32,8 +32,6 @@ func (appender *TestAppender) Write(entry *soba.Entry) {
 			field.Write(encoder)
 		}
 	})
-
-	buffer := encoder.Bytes()
 
 	appender.entries = append(appender.entries, string(buffer))
 	appender.times = append(appender.times, time.Unix(entry.Unix(), 0).UTC())

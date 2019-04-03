@@ -13,13 +13,14 @@ type Encoder interface {
 	ObjectEncoder
 	// An Encoder is a ArrayEncoder.
 	ArrayEncoder
-	// Bytes return the encoder content buffer.
+	// Bytes returns the encoder content buffer.
 	Bytes() []byte
 	// Close recycles underlying resources of encoder.
 	Close()
-	// Open start the initialization of a new instance/object.
+	// Encode start the initialization of a new instance/object.
 	// The given callback is used to provides object properties.
-	Open(handler func(Encoder))
+	// At the end of it, it will returns the encoder content buffer and recycles underlying resources.
+	Encode(handler func(encoder Encoder)) []byte
 }
 
 // ArrayEncoder is a strongly-typed, encoding-agnostic interface for adding array to the logging context.

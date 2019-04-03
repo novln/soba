@@ -12,8 +12,9 @@ import (
 type TestEncoder struct {
 }
 
-func (encoder *TestEncoder) Open(handler func(encoder.Encoder)) {
+func (encoder *TestEncoder) Encode(handler func(encoder.Encoder)) []byte {
 	handler(encoder)
+	return nil
 }
 
 func (encoder *TestEncoder) Bytes() []byte {

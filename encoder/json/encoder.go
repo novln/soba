@@ -31,14 +31,15 @@ func (encoder *Encoder) Close() {
 	}
 }
 
-// Open start the initialization of a new instance/object.
+// Encode start the initialization of a new instance/object.
 // The given callback is used to provides object properties.
-// Also, the encoder content buffer is finished by a line break.
-func (encoder *Encoder) Open(handler func(encoder encoder.Encoder)) {
+// At the end of it, it will returns the encoder content buffer, finished by a line break.
+func (encoder *Encoder) Encode(handler func(encoder encoder.Encoder)) []byte {
 	encoder.AppendBeginMarker()
 	handler(encoder)
 	encoder.AppendEndMarker()
 	encoder.AppendLineBreak()
+	return encoder.Bytes()
 }
 
 // NewEncoder creates a new JSON Encoder.

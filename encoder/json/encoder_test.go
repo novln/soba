@@ -65,10 +65,9 @@ func TestJSON_Encoder_Open(t *testing.T) {
 
 		expected := fmt.Sprint(`{"foobar":42}`, "\n")
 
-		encoder.Open(func(e libencoder.Encoder) {
+		buffer := encoder.Encode(func(e libencoder.Encoder) {
 			e.AddInt("foobar", 42)
 		})
-		buffer := encoder.Bytes()
 
 		if expected != string(buffer) {
 			t.Fatalf("Unexpected buffer: '%s' should be '%s'", string(buffer), expected)
