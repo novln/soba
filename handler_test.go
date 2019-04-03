@@ -123,6 +123,25 @@ func TestHandler_NewLogger(t *testing.T) {
 					"api-log",
 				},
 			},
+			"pkg.cache": {
+				Level:    "debug",
+				Additive: false,
+				Appenders: []string{
+					"stdout",
+				},
+			},
+			"pkg.core": {
+				Level:    "debug",
+				Additive: true,
+				Appenders: []string{
+					"stdout",
+				},
+			},
+			"pkg.proxy": {
+				Level:     "debug",
+				Additive:  true,
+				Appenders: []string{},
+			},
 		},
 	})
 	if err != nil {
@@ -152,6 +171,12 @@ func TestHandler_NewLogger(t *testing.T) {
 		}
 		if stdoutAppender.Size() != 0 {
 			t.Fatalf("Unexpected number of entries for stdout appender: %d should be %d", stdoutAppender.Size(), 0)
+		}
+		if apiAppender.Size() != 0 {
+			t.Fatalf("Unexpected number of entries for api appender: %d should be %d", apiAppender.Size(), 0)
+		}
+		if authAppender.Size() != 0 {
+			t.Fatalf("Unexpected number of entries for auth appender: %d should be %d", authAppender.Size(), 0)
 		}
 
 		expected1 := fmt.Sprint(
@@ -214,6 +239,12 @@ func TestHandler_NewLogger(t *testing.T) {
 		}
 		if stdoutAppender.Size() != 9 {
 			t.Fatalf("Unexpected number of entries for stdout appender: %d should be %d", stdoutAppender.Size(), 9)
+		}
+		if apiAppender.Size() != 0 {
+			t.Fatalf("Unexpected number of entries for api appender: %d should be %d", apiAppender.Size(), 0)
+		}
+		if dbAppender.Size() != 0 {
+			t.Fatalf("Unexpected number of entries for db appender: %d should be %d", dbAppender.Size(), 0)
 		}
 
 		expected1 := fmt.Sprint(
@@ -316,14 +347,246 @@ func TestHandler_NewLogger(t *testing.T) {
 	// Testing views logger
 	//
 	{
-		// TODO
+		handler.New("views.users").Info("User created",
+			soba.String("id", "01CV5FN4JF1STZMYDJWMGQR68W"),
+			soba.String("action", "create"), soba.String("status", "success"),
+		)
+		handler.New("views.users").Info("User created",
+			soba.String("id", "01CV5FP35H929DBQ3KJ6JRST3W"),
+			soba.String("action", "create"), soba.String("status", "success"),
+		)
+		handler.New("views.organizations").Info("Organization created",
+			soba.String("id", "01CV5H2TRFXDHVSTCK5BJVQ1TK"),
+			soba.String("action", "create"), soba.String("status", "success"),
+		)
+		handler.New("views.users").Warn("User authentication has failed",
+			soba.String("id", "01CZBCXAM0S9VCMWSCAP0K5DQF"),
+			soba.String("action", "login"), soba.String("status", "failure"),
+		)
+		handler.New("views.users").Warn("User authentication has failed",
+			soba.String("id", "01CZBCXAM0S9VCMWSCAP0K5DQF"),
+			soba.String("action", "login"), soba.String("status", "failure"),
+		)
+		handler.New("views.users").Warn("User authentication has failed",
+			soba.String("id", "01CZBCXAM0S9VCMWSCAP0K5DQF"),
+			soba.String("action", "login"), soba.String("status", "failure"),
+		)
+		handler.New("views.users").Info("User authentication has succeeded",
+			soba.String("id", "01CZBCXAM0S9VCMWSCAP0K5DQF"),
+			soba.String("action", "login"), soba.String("status", "success"),
+		)
+
+		if apiAppender.Size() != 3 {
+			t.Fatalf("Unexpected number of entries for api appender: %d should be %d", apiAppender.Size(), 3)
+		}
+		if stdoutAppender.Size() != 0 {
+			t.Fatalf("Unexpected number of entries for stdout appender: %d should be %d", stdoutAppender.Size(), 0)
+		}
+		if authAppender.Size() != 0 {
+			t.Fatalf("Unexpected number of entries for auth appender: %d should be %d", authAppender.Size(), 0)
+		}
+		if dbAppender.Size() != 0 {
+			t.Fatalf("Unexpected number of entries for db appender: %d should be %d", dbAppender.Size(), 0)
+		}
+
+		expected1 := fmt.Sprint(
+			`{"logger":"views.users","level":"warning","message":"User authentication has failed",`,
+			`"id":"01CZBCXAM0S9VCMWSCAP0K5DQF","action":"login","status":"failure"}`,
+			"\n",
+		)
+		expected2 := fmt.Sprint(
+			`{"logger":"views.users","level":"warning","message":"User authentication has failed",`,
+			`"id":"01CZBCXAM0S9VCMWSCAP0K5DQF","action":"login","status":"failure"}`,
+			"\n",
+		)
+		expected3 := fmt.Sprint(
+			`{"logger":"views.users","level":"warning","message":"User authentication has failed",`,
+			`"id":"01CZBCXAM0S9VCMWSCAP0K5DQF","action":"login","status":"failure"}`,
+			"\n",
+		)
+
+		if apiAppender.Log(0) != expected1 {
+			t.Fatalf("Unexpected log message #1: '%s' should be '%s'", apiAppender.Log(0), expected1)
+		}
+		if apiAppender.Log(1) != expected2 {
+			t.Fatalf("Unexpected log message #2: '%s' should be '%s'", apiAppender.Log(1), expected2)
+		}
+		if apiAppender.Log(2) != expected3 {
+			t.Fatalf("Unexpected log message #2: '%s' should be '%s'", apiAppender.Log(2), expected3)
+		}
+
+		apiAppender.Clear()
+		stdoutAppender.Clear()
+
+	}
+
+	//
+	// Testing pkg.cache logger
+	//
+	{
+
+		handler.New("pkg.cache").Debug("Cache miss", soba.String("key", "foobar"), soba.Bool("hit", false))
+		handler.New("pkg.cache").Debug("Cache hit", soba.String("key", "foobar"), soba.Bool("hit", true))
+
+		if stdoutAppender.Size() != 2 {
+			t.Fatalf("Unexpected number of entries for stdout appender: %d should be %d", stdoutAppender.Size(), 2)
+		}
+		if apiAppender.Size() != 0 {
+			t.Fatalf("Unexpected number of entries for api appender: %d should be %d", apiAppender.Size(), 0)
+		}
+		if authAppender.Size() != 0 {
+			t.Fatalf("Unexpected number of entries for auth appender: %d should be %d", authAppender.Size(), 0)
+		}
+		if dbAppender.Size() != 0 {
+			t.Fatalf("Unexpected number of entries for db appender: %d should be %d", dbAppender.Size(), 0)
+		}
+
+		expected1 := fmt.Sprint(
+			`{"logger":"pkg.cache","level":"debug","message":"Cache miss",`,
+			`"key":"foobar","hit":false}`,
+			"\n",
+		)
+		expected2 := fmt.Sprint(
+			`{"logger":"pkg.cache","level":"debug","message":"Cache hit",`,
+			`"key":"foobar","hit":true}`,
+			"\n",
+		)
+
+		if stdoutAppender.Log(0) != expected1 {
+			t.Fatalf("Unexpected log message #1: '%s' should be '%s'", stdoutAppender.Log(0), expected1)
+		}
+		if stdoutAppender.Log(1) != expected2 {
+			t.Fatalf("Unexpected log message #1: '%s' should be '%s'", stdoutAppender.Log(1), expected2)
+		}
+
+		stdoutAppender.Clear()
+
+	}
+
+	//
+	// Testing pkg.core logger
+	//
+	{
+
+		handler.New("pkg.core").Debug("Account closed", soba.String("id", "01D7JJEQASQXNZP5C6DFT1J7RN"))
+		handler.New("pkg.core").Debug("Account closed", soba.String("id", "01D7JJEQASQXNZP5C6DFT1J7RN"))
+
+		if stdoutAppender.Size() != 2 {
+			t.Fatalf("Unexpected number of entries for stdout appender: %d should be %d", stdoutAppender.Size(), 2)
+		}
+		if apiAppender.Size() != 0 {
+			t.Fatalf("Unexpected number of entries for api appender: %d should be %d", apiAppender.Size(), 0)
+		}
+		if authAppender.Size() != 0 {
+			t.Fatalf("Unexpected number of entries for auth appender: %d should be %d", authAppender.Size(), 0)
+		}
+		if dbAppender.Size() != 0 {
+			t.Fatalf("Unexpected number of entries for db appender: %d should be %d", dbAppender.Size(), 0)
+		}
+
+		expected1 := fmt.Sprint(
+			`{"logger":"pkg.core","level":"debug","message":"Account closed",`,
+			`"id":"01D7JJEQASQXNZP5C6DFT1J7RN"}`,
+			"\n",
+		)
+		expected2 := fmt.Sprint(
+			`{"logger":"pkg.core","level":"debug","message":"Account closed",`,
+			`"id":"01D7JJEQASQXNZP5C6DFT1J7RN"}`,
+			"\n",
+		)
+
+		if stdoutAppender.Log(0) != expected1 {
+			t.Fatalf("Unexpected log message #1: '%s' should be '%s'", stdoutAppender.Log(0), expected1)
+		}
+		if stdoutAppender.Log(1) != expected2 {
+			t.Fatalf("Unexpected log message #1: '%s' should be '%s'", stdoutAppender.Log(1), expected2)
+		}
+
+		stdoutAppender.Clear()
+
+	}
+
+	//
+	// Testing pkg.proxy logger
+	//
+	{
+
+		handler.New("pkg.proxy").Debug("Request forwarded", soba.String("trace_id", "b2711a28753adb247822ad9f27a3cc"))
+		handler.New("pkg.proxy").Debug("Request forwarded", soba.String("trace_id", "953bfedc8bfcc3ac6559c2920c0e37"))
+
+		if stdoutAppender.Size() != 2 {
+			t.Fatalf("Unexpected number of entries for stdout appender: %d should be %d", stdoutAppender.Size(), 2)
+		}
+		if apiAppender.Size() != 0 {
+			t.Fatalf("Unexpected number of entries for api appender: %d should be %d", apiAppender.Size(), 0)
+		}
+		if authAppender.Size() != 0 {
+			t.Fatalf("Unexpected number of entries for auth appender: %d should be %d", authAppender.Size(), 0)
+		}
+		if dbAppender.Size() != 0 {
+			t.Fatalf("Unexpected number of entries for db appender: %d should be %d", dbAppender.Size(), 0)
+		}
+
+		expected1 := fmt.Sprint(
+			`{"logger":"pkg.proxy","level":"debug","message":"Request forwarded",`,
+			`"trace_id":"b2711a28753adb247822ad9f27a3cc"}`,
+			"\n",
+		)
+		expected2 := fmt.Sprint(
+			`{"logger":"pkg.proxy","level":"debug","message":"Request forwarded",`,
+			`"trace_id":"953bfedc8bfcc3ac6559c2920c0e37"}`,
+			"\n",
+		)
+
+		if stdoutAppender.Log(0) != expected1 {
+			t.Fatalf("Unexpected log message #1: '%s' should be '%s'", stdoutAppender.Log(0), expected1)
+		}
+		if stdoutAppender.Log(1) != expected2 {
+			t.Fatalf("Unexpected log message #1: '%s' should be '%s'", stdoutAppender.Log(1), expected2)
+		}
+
+		stdoutAppender.Clear()
+
 	}
 
 	//
 	// Testing random logger
 	//
 	{
-		// TODO
+
+		handler.New("services.webhooks").Info("User email confirmed",
+			soba.String("id", "01CV5FN4JF1STZMYDJWMGQR68W"),
+			soba.String("webhook", "email.confirm"), soba.String("status", "success"),
+		)
+		handler.New("services.webhooks").Debug("Webhook received",
+			soba.String("id", "01CV5FN4JF1STZMYDJWMGQR68W"),
+			soba.String("webhook", "email.confirm"), soba.String("status", "received"),
+		)
+
+		if stdoutAppender.Size() != 1 {
+			t.Fatalf("Unexpected number of entries for stdout appender: %d should be %d", dbAppender.Size(), 1)
+		}
+		if apiAppender.Size() != 0 {
+			t.Fatalf("Unexpected number of entries for api appender: %d should be %d", apiAppender.Size(), 0)
+		}
+		if authAppender.Size() != 0 {
+			t.Fatalf("Unexpected number of entries for auth appender: %d should be %d", authAppender.Size(), 0)
+		}
+		if dbAppender.Size() != 0 {
+			t.Fatalf("Unexpected number of entries for db appender: %d should be %d", dbAppender.Size(), 0)
+		}
+
+		expected1 := fmt.Sprint(
+			`{"logger":"services.webhooks","level":"info","message":"User email confirmed",`,
+			`"id":"01CV5FN4JF1STZMYDJWMGQR68W","webhook":"email.confirm","status":"success"}`,
+			"\n",
+		)
+		if stdoutAppender.Log(0) != expected1 {
+			t.Fatalf("Unexpected log message #1: '%s' should be '%s'", stdoutAppender.Log(0), expected1)
+		}
+
+		stdoutAppender.Clear()
+
 	}
 
 }
