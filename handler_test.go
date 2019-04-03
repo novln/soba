@@ -101,6 +101,15 @@ func TestHandler_NewLogger(t *testing.T) {
 				"stdout",
 			},
 		},
+		Appenders: map[string]soba.ConfigAppender{
+			"console-log": {
+				Type: soba.ConsoleAppenderType,
+			},
+			"file-log": {
+				Type: soba.FileAppenderType,
+				Path: "/var/lib/soba/file.log",
+			},
+		},
 		Loggers: map[string]soba.ConfigLogger{
 			"components.auth": {
 				Level:    "debug",
