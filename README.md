@@ -2,7 +2,7 @@
 
 [![Documentation][godoc-img]][godoc-url]
 ![License][license-img]
-[![Build Status][travis-img]][travis-url]
+[![Build Status][circle-img]][circle-url]
 [![Coverage Status][coverage-img]][coverage-url]
 [![Report Status][goreport-img]][goreport-url]
 
@@ -71,15 +71,16 @@ Using [Go dependency management tool](https://github.com/golang/dep) is **highly
 
 ## License
 
-This is Free Software, released under the [`MIT License`](LICENSE).
+This is Free Software, released under the [`MIT License`][license-url].
 
 [soba-url]: https://github.com/novln/soba
-[soba-img]: https://raw.githubusercontent.com/novln/soba/master/soba.png
+[soba-img]: soba.png
 [godoc-url]: https://godoc.org/github.com/novln/soba
 [godoc-img]: https://godoc.org/github.com/novln/soba?status.svg
 [license-img]: https://img.shields.io/badge/license-MIT-blue.svg
-[travis-url]: https://travis-ci.org/novln/soba
-[travis-img]: https://travis-ci.org/novln/soba.svg?branch=master
+[license-url]: LICENSE
+[circle-url]: https://circleci.com/gh/novln/soba/tree/master
+[circle-img]: https://circleci.com/gh/novln/soba.svg?style=shield&circle-token=253294d3873e767a02475e5b83533b683b2d401f
 [coverage-url]: https://codecov.io/gh/novln/soba
 [coverage-img]: https://codecov.io/gh/novln/soba/branch/master/graph/badge.svg
 [goreport-url]: https://goreportcard.com/report/novln/soba
