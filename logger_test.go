@@ -105,3 +105,5 @@ func TestLogger_IsNameValid(t *testing.T) {
 	}
 
 }
+
+// TODO More test on logger

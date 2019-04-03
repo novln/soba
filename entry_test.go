@@ -208,3 +208,5 @@ func TestEntry_DuplicateFieldName(t *testing.T) {
 			`"quartz":6`, f3)
 	}
 }
+
+// TODO WriteEntry test
