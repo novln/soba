@@ -25,11 +25,18 @@ func New(ctx context.Context, name string) Logger {
 	}
 
 	handler := ctx.Value(hCtxKey).(Handler)
+	if handler == nil {
+		panic("soba: must be initialized with soba.Load()")
+	}
+
 	return handler.New(name)
 }
 
 // NewLogger creates a new logger.
 func NewLogger(name string, level Level, appenders []Appender) Logger {
+	if !IsLoggerNameValid(name) {
+		panic(fmt.Sprintf("soba: invalid logger name format: %s", name))
+	}
 	return Logger{
 		name:      name,
 		level:     level,
