@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"strings"
 	"time"
-
-	"github.com/pkg/errors"
 )
 
 // A Field is an operation that add a key-value pair to the logger's context.
@@ -187,15 +185,7 @@ func NamedError(key string, err error) Field {
 		return Skip(key)
 	}
 
-	value := err.Error()
-	sterr, ok := err.(interface {
-		StackTrace() errors.StackTrace
-	})
-	if ok {
-		value += fmt.Sprintf(" %+v", sterr.StackTrace())
-	}
-
-	return String(key, value)
+	return String(key, err.Error())
 }
 
 // ----------------------------------------------------------------------------
