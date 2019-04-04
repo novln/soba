@@ -58,7 +58,7 @@ func BenchmarkJSON_NewEncoder(b *testing.B) {
 	})
 }
 
-func TestJSON_Encoder_Open(t *testing.T) {
+func TestJSON_Encoder_Encode(t *testing.T) {
 	{
 		encoder := json.NewEncoder()
 		defer encoder.Close()
@@ -67,6 +67,20 @@ func TestJSON_Encoder_Open(t *testing.T) {
 
 		buffer := encoder.Encode(func(e libencoder.Encoder) {
 			e.AddInt("foobar", 42)
+		})
+
+		if expected != string(buffer) {
+			t.Fatalf("Unexpected buffer: '%s' should be '%s'", string(buffer), expected)
+		}
+	}
+	{
+		encoder := json.NewEncoder()
+		defer encoder.Close()
+
+		expected := fmt.Sprint(`{"shared":true}`, "\n")
+
+		buffer := encoder.Encode(func(e libencoder.Encoder) {
+			e.AddBool("shared", true)
 		})
 
 		if expected != string(buffer) {
