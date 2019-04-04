@@ -84,6 +84,9 @@ issues:
     - path: encoder/json/types_test.go
       linters:
         - goconst
+    - path: fields_test.go
+      linters:
+        - goconst
   max-per-linter: 1024
   max-same: 1024
   exclude:
