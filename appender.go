@@ -32,6 +32,7 @@ type Appender interface {
 var IsAppenderNameValid = regexp.MustCompile(`^[a-z]+[a-z._0-9-]+[a-z0-9]+$`).MatchString
 
 // NewAppender creates a new Appender from given configuration.
+// To register a custom appender, please use soba.RegisterAppenders().
 func NewAppender(name string, conf ConfigAppender) (Appender, error) {
 	switch conf.Type {
 	case ConsoleAppenderType:
