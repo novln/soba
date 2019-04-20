@@ -209,4 +209,31 @@ func TestEntry_DuplicateFieldName(t *testing.T) {
 	}
 }
 
-// TODO WriteEntry test
+// Test entry in case of a duplicate name in fields.
+func TestEntry_WriteEntry(t *testing.T) {
+	encoder := json.NewEncoder()
+	defer encoder.Close()
+
+	entry := soba.NewEntry("test", soba.InfoLevel, "A log message", []soba.Field{
+		soba.Bool("test", true),
+	})
+	defer entry.Flush()
+
+	buffer := soba.WriteEntry(entry, encoder)
+	line := strings.TrimSpace(string(buffer))
+
+	// The variable line should have something like:
+	// {"logger":"test","time":"2019-04-20T09:53:13Z","level":"info","message":"A log message","test":true}
+	// In order to avoid guessing the time of generation, we'll only verify the
+	// prefix and the suffix of this entry line...
+	prefix := `{"logger":"test","time":`
+	suffix := `","level":"info","message":"A log message","test":true}`
+
+	if !strings.HasPrefix(line, prefix) {
+		t.Fatalf("Unexpected entry line: %s", line)
+	}
+
+	if !strings.HasSuffix(line, suffix) {
+		t.Fatalf("Unexpected entry line: %s", line)
+	}
+}
