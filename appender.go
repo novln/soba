@@ -32,7 +32,7 @@ type Appender interface {
 var IsAppenderNameValid = regexp.MustCompile(`^[a-z]+[a-z._0-9-]+[a-z0-9]+$`).MatchString
 
 // NewAppender creates a new Appender from given configuration.
-// To register a custom appender, please use soba.RegisterAppenders().
+// To register a custom appender, please use soba.RegisterAppenders() function.
 func NewAppender(name string, conf ConfigAppender) (Appender, error) {
 	switch conf.Type {
 	case ConsoleAppenderType:
@@ -77,7 +77,14 @@ func (appender *ConsoleAppender) Write(entry *Entry) {
 	appender.mutex.Lock()
 	defer appender.mutex.Unlock()
 
-	_, _ = appender.out.Write(buffer)
+	// TODO: Should I handle the number of bytes written?
+	//       Can it be less than len(buffer)?
+	//       Investigation required!
+	_, err := appender.out.Write(buffer)
+	if err != nil {
+		// We choose to ignore the error if we cannot log it on stderr.
+		_, _ = fmt.Fprintln(os.Stderr, err.Error())
+	}
 }
 
 // TODO (novln): Add a rolling system to FileAppender
