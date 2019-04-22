@@ -1,6 +1,7 @@
 package soba_test
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 	"time"
@@ -29,6 +30,17 @@ type TestObject struct {
 func (o TestObject) Encode(encoder soba.ObjectEncoder) {
 	encoder.AddString("key", o.Key)
 	encoder.AddInt64("value", o.Value)
+}
+
+// TestArray is an ArrayEncoder for test.
+type TestArray struct {
+	Objects []TestObject
+}
+
+func (o TestArray) Encode(encoder soba.ArrayEncoder) {
+	for _, object := range o.Objects {
+		encoder.AppendObject(object)
+	}
 }
 
 // Test creation of new field.
@@ -345,5 +357,319 @@ func TestField_Null(t *testing.T) {
 	}
 }
 
-// TODO: Add unit test for every field functions.
-// - Arrays
+// Test field with a collection of objects.
+func TestField_Objects(t *testing.T) {
+	objects := []soba.ObjectMarshaler{
+		&TestObject{
+			Key:   "10.0.6.113",
+			Value: 12,
+		},
+		&TestObject{
+			Key:   "10.0.6.46",
+			Value: 36,
+		},
+	}
+
+	field := soba.Objects("key", objects)
+	expected := `"key":[{"key":"10.0.6.113","value":12},{"key":"10.0.6.46","value":36}]`
+
+	value := DebugField(field)
+
+	if expected != value {
+		t.Fatalf("Unexpected value: '%s' should be '%s'", value, expected)
+	}
+}
+
+// Test field with an array.
+func TestField_Array(t *testing.T) {
+	array := &TestArray{
+		Objects: []TestObject{
+			{
+				Key:   "10.0.4.177",
+				Value: 23,
+			},
+			{
+				Key:   "10.0.4.21",
+				Value: 255,
+			},
+		},
+	}
+
+	field := soba.Array("key", array)
+	expected := `"key":[{"key":"10.0.4.177","value":23},{"key":"10.0.4.21","value":255}]`
+
+	value := DebugField(field)
+
+	if expected != value {
+		t.Fatalf("Unexpected value: '%s' should be '%s'", value, expected)
+	}
+}
+
+// Test field with a list of int.
+func TestField_Ints(t *testing.T) {
+	list := []int{1, 2, 3, 4}
+
+	field := soba.Ints("key", list)
+	expected := `"key":[1,2,3,4]`
+
+	value := DebugField(field)
+
+	if expected != value {
+		t.Fatalf("Unexpected value: '%s' should be '%s'", value, expected)
+	}
+}
+
+// Test field with a list of int8.
+func TestField_Int8s(t *testing.T) {
+	list := []int8{1, 2, 3, 4}
+
+	field := soba.Int8s("key", list)
+	expected := `"key":[1,2,3,4]`
+
+	value := DebugField(field)
+
+	if expected != value {
+		t.Fatalf("Unexpected value: '%s' should be '%s'", value, expected)
+	}
+}
+
+// Test field with a list of int16.
+func TestField_Int16s(t *testing.T) {
+	list := []int16{1, 2, 3, 4}
+
+	field := soba.Int16s("key", list)
+	expected := `"key":[1,2,3,4]`
+
+	value := DebugField(field)
+
+	if expected != value {
+		t.Fatalf("Unexpected value: '%s' should be '%s'", value, expected)
+	}
+}
+
+// Test field with a list of int32.
+func TestField_Int32s(t *testing.T) {
+	list := []int32{1, 2, 3, 4}
+
+	field := soba.Int32s("key", list)
+	expected := `"key":[1,2,3,4]`
+
+	value := DebugField(field)
+
+	if expected != value {
+		t.Fatalf("Unexpected value: '%s' should be '%s'", value, expected)
+	}
+}
+
+// Test field with a list of int64.
+func TestField_Int64s(t *testing.T) {
+	list := []int64{1, 2, 3, 4}
+
+	field := soba.Int64s("key", list)
+	expected := `"key":[1,2,3,4]`
+
+	value := DebugField(field)
+
+	if expected != value {
+		t.Fatalf("Unexpected value: '%s' should be '%s'", value, expected)
+	}
+}
+
+// Test field with a list of uint.
+func TestField_Uints(t *testing.T) {
+	list := []uint{1, 2, 3, 4}
+
+	field := soba.Uints("key", list)
+	expected := `"key":[1,2,3,4]`
+
+	value := DebugField(field)
+
+	if expected != value {
+		t.Fatalf("Unexpected value: '%s' should be '%s'", value, expected)
+	}
+}
+
+// Test field with a list of uint8.
+func TestField_Uint8s(t *testing.T) {
+	list := []uint8{1, 2, 3, 4}
+
+	field := soba.Uint8s("key", list)
+	expected := `"key":[1,2,3,4]`
+
+	value := DebugField(field)
+
+	if expected != value {
+		t.Fatalf("Unexpected value: '%s' should be '%s'", value, expected)
+	}
+}
+
+// Test field with a list of uint16.
+func TestField_Uint16s(t *testing.T) {
+	list := []uint16{1, 2, 3, 4}
+
+	field := soba.Uint16s("key", list)
+	expected := `"key":[1,2,3,4]`
+
+	value := DebugField(field)
+
+	if expected != value {
+		t.Fatalf("Unexpected value: '%s' should be '%s'", value, expected)
+	}
+}
+
+// Test field with a list of uint32.
+func TestField_Uint32s(t *testing.T) {
+	list := []uint32{1, 2, 3, 4}
+
+	field := soba.Uint32s("key", list)
+	expected := `"key":[1,2,3,4]`
+
+	value := DebugField(field)
+
+	if expected != value {
+		t.Fatalf("Unexpected value: '%s' should be '%s'", value, expected)
+	}
+}
+
+// Test field with a list of uint64.
+func TestField_Uint64s(t *testing.T) {
+	list := []uint64{1, 2, 3, 4}
+
+	field := soba.Uint64s("key", list)
+	expected := `"key":[1,2,3,4]`
+
+	value := DebugField(field)
+
+	if expected != value {
+		t.Fatalf("Unexpected value: '%s' should be '%s'", value, expected)
+	}
+}
+
+// Test field with a list of float32.
+func TestField_Float32s(t *testing.T) {
+	list := []float32{1.1, 1.2, 1.3, 1.4}
+
+	field := soba.Float32s("key", list)
+	expected := `"key":[1.1,1.2,1.3,1.4]`
+
+	value := DebugField(field)
+
+	if expected != value {
+		t.Fatalf("Unexpected value: '%s' should be '%s'", value, expected)
+	}
+}
+
+// Test field with a list of float64.
+func TestField_Float64s(t *testing.T) {
+	list := []float64{1.1, 1.2, 1.3, 1.4}
+
+	field := soba.Float64s("key", list)
+	expected := `"key":[1.1,1.2,1.3,1.4]`
+
+	value := DebugField(field)
+
+	if expected != value {
+		t.Fatalf("Unexpected value: '%s' should be '%s'", value, expected)
+	}
+}
+
+// Test field with a list of string.
+func TestField_Strings(t *testing.T) {
+	list := []string{"abc", "ijk", "xyz"}
+
+	field := soba.Strings("key", list)
+	expected := `"key":["abc","ijk","xyz"]`
+
+	value := DebugField(field)
+
+	if expected != value {
+		t.Fatalf("Unexpected value: '%s' should be '%s'", value, expected)
+	}
+}
+
+// Test field with a list of fmt.Stringer.
+func TestField_Stringers(t *testing.T) {
+	list := []fmt.Stringer{
+		230 * time.Millisecond,
+	}
+
+	field := soba.Stringers("key", list)
+	expected := `"key":["230ms"]`
+
+	value := DebugField(field)
+
+	if expected != value {
+		t.Fatalf("Unexpected value: '%s' should be '%s'", value, expected)
+	}
+}
+
+// Test field with a list of time.Time.
+func TestField_Times(t *testing.T) {
+	timezone, err := time.LoadLocation("Europe/Paris")
+	if err != nil {
+		t.Fatalf("Unexpected error to load timezone: %s", err)
+	}
+	list := []time.Time{
+		time.Unix(1540912844, 0).In(timezone),
+		time.Unix(1541113832, 0).In(timezone),
+	}
+
+	field := soba.Times("key", list)
+	expected := `"key":["2018-10-30T16:20:44+01:00","2018-11-02T00:10:32+01:00"]`
+
+	value := DebugField(field)
+
+	if expected != value {
+		t.Fatalf("Unexpected value: '%s' should be '%s'", value, expected)
+	}
+}
+
+// Test field with a list of time.Duration.
+func TestField_Durations(t *testing.T) {
+	list := []time.Duration{
+		(3 * time.Millisecond) + (762 * time.Microsecond),
+		(4 * time.Millisecond) + (275 * time.Microsecond),
+	}
+
+	field := soba.Durations("key", list)
+	expected := `"key":["3.762ms","4.275ms"]`
+
+	value := DebugField(field)
+
+	if expected != value {
+		t.Fatalf("Unexpected value: '%s' should be '%s'", value, expected)
+	}
+}
+
+// Test field with a list of bool.
+func TestField_Bools(t *testing.T) {
+	list := []bool{
+		true, false, true,
+	}
+
+	field := soba.Bools("key", list)
+	expected := `"key":[true,false,true]`
+
+	value := DebugField(field)
+
+	if expected != value {
+		t.Fatalf("Unexpected value: '%s' should be '%s'", value, expected)
+	}
+}
+
+// Test field with a list of errors.
+func TestField_Errors(t *testing.T) {
+	list := []error{
+		fmt.Errorf("unexpected error: %d", 80),
+		errors.New("cannot open: /var/lib/mongodb/db"),
+	}
+
+	field := soba.Errors("key", list)
+	expected := `"key":["unexpected error: 80","cannot open: /var/lib/mongodb/db"]`
+
+	value := DebugField(field)
+
+	if expected != value {
+		t.Fatalf("Unexpected value: '%s' should be '%s'", value, expected)
+	}
+}
