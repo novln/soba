@@ -8,6 +8,7 @@ import (
 // Encoder is a strongly-typed, encoding-agnostic interface for adding array, map or struct-like object to the
 // logging context.
 // Also, be advised that Encoder aren't safe for concurrent use.
+// Finally, when an encoder is finished, always execute Close() method to recycles underlying resources of encoder.
 type Encoder interface {
 	// An Encoder is a ObjectEncoder.
 	ObjectEncoder
@@ -19,7 +20,7 @@ type Encoder interface {
 	Close()
 	// Encode start the initialization of a new instance/object.
 	// The given callback is used to provides object properties.
-	// At the end of it, it will returns the encoder content buffer and recycles underlying resources.
+	// At the end of it, it will returns the encoder content buffer, finished by a line break.
 	Encode(handler func(encoder Encoder)) []byte
 }
 

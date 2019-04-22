@@ -9,6 +9,8 @@ import (
 // Source forked from https://github.com/uber-go/zap and from https://github.com/rs/zerolog
 
 // Encoder is a JSON encoder that isn't safe for concurrent access.
+// To encode a new instance/object, you should use Encode() method that will handles a lot of boilerplate for you.
+// Finally, when you have retrieve the buffer content, execute Close() method to recycles underlying resources.
 type Encoder struct {
 	buffer []byte
 }
