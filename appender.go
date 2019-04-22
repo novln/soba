@@ -22,7 +22,7 @@ const (
 // An Appender defines an entity that receives a log entry and logs it somewhere,
 // like for example, to a file, the console, or the syslog.
 type Appender interface {
-	// Name returns Appender name.
+	// Name returns appender name.
 	Name() string
 	// Write receives a log entry.
 	Write(entry *Entry)
@@ -62,7 +62,7 @@ type ConsoleAppender struct {
 	out   io.Writer
 }
 
-// Name returns Appender name.
+// Name returns appender name.
 func (appender *ConsoleAppender) Name() string {
 	return appender.name
 }
@@ -94,7 +94,7 @@ type FileAppender struct {
 	name string
 }
 
-// Name returns Appender name.
+// Name returns appender name.
 func (appender *FileAppender) Name() string {
 	return appender.name
 }
