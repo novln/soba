@@ -188,6 +188,13 @@ func NamedError(key string, err error) Field {
 	return String(key, err.Error())
 }
 
+// Null creates a typesafe Field with given key as null value.
+func Null(key string) Field {
+	return NewField(key, func(encoder Encoder) {
+		encoder.AddNull(key)
+	})
+}
+
 // ----------------------------------------------------------------------------
 // Array
 // ----------------------------------------------------------------------------

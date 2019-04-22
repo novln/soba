@@ -31,6 +31,31 @@ func (o TestObject) Encode(encoder soba.ObjectEncoder) {
 	encoder.AddInt64("value", o.Value)
 }
 
+// Test creation of new field.
+func TestField_New(t *testing.T) {
+	encoder := json.NewEncoder()
+	defer encoder.Close()
+
+	name := "alpha"
+	message := `"alpha":false`
+	handler := func(encoder soba.Encoder) {
+		encoder.AddBool("alpha", false)
+	}
+
+	field := soba.NewField(name, handler)
+
+	if name != field.Name() {
+		t.Fatalf("Unexpected field name: '%s' should be '%s'", field.Name(), name)
+	}
+
+	field.Write(encoder)
+	buffer := encoder.Bytes()
+
+	if message != string(buffer) {
+		t.Fatalf("Unexpected field message: '%s' should be '%s'", message, string(buffer))
+	}
+}
+
 // Test field with object.
 func TestField_Object(t *testing.T) {
 	object := &TestObject{
@@ -300,6 +325,18 @@ func TestField_NamedError(t *testing.T) {
 func TestField_EmptyError(t *testing.T) {
 	field := soba.Error(nil)
 	expected := ``
+
+	value := DebugField(field)
+
+	if expected != value {
+		t.Fatalf("Unexpected value: '%s' should be '%s'", value, expected)
+	}
+}
+
+// Test field with null value.
+func TestField_Null(t *testing.T) {
+	field := soba.Null("key")
+	expected := `"key":null`
 
 	value := DebugField(field)
 
