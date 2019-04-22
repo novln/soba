@@ -20,6 +20,33 @@ func DebugField(field soba.Field) string {
 	return string(dst)
 }
 
+// TestObject is an ObjectMarshaler for test.
+type TestObject struct {
+	Key   string
+	Value int64
+}
+
+func (o TestObject) Encode(encoder soba.ObjectEncoder) {
+	encoder.AddString("key", o.Key)
+	encoder.AddInt64("value", o.Value)
+}
+
+// Test field with object.
+func TestField_Object(t *testing.T) {
+	object := &TestObject{
+		Key:   "10.0.7.23",
+		Value: 20,
+	}
+	field := soba.Object("key", object)
+	expected := `"key":{"key":"10.0.7.23","value":20}`
+
+	value := DebugField(field)
+
+	if expected != value {
+		t.Fatalf("Unexpected value: '%s' should be '%s'", value, expected)
+	}
+}
+
 // Test field with int.
 func TestField_Int(t *testing.T) {
 	field := soba.Int("key", 1)
@@ -282,5 +309,4 @@ func TestField_EmptyError(t *testing.T) {
 }
 
 // TODO: Add unit test for every field functions.
-// - Object
 // - Arrays

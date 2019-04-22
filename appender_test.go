@@ -9,7 +9,7 @@ import (
 	"github.com/novln/soba/encoder/json"
 )
 
-// TestAppender is an appender for unit test.
+// TestAppender is an appender for test.
 type TestAppender struct {
 	name    string
 	entries []string

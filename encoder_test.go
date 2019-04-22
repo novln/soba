@@ -8,7 +8,7 @@ import (
 	"github.com/novln/soba/encoder"
 )
 
-// TestEncoder is an encoder for unit test.
+// TestEncoder is an encoder for test.
 type TestEncoder struct {
 }
 
@@ -148,3 +148,5 @@ func NewTestEncoder() *TestEncoder {
 
 // Ensure TestEncoder implements Encoder interface at compile time.
 var _ soba.Encoder = &TestEncoder{}
+
+// TODO Add benchmark for json encoder.

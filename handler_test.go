@@ -10,7 +10,7 @@ import (
 	"github.com/novln/soba"
 )
 
-// NewHandler creates a default handler for unit test and benchmark.
+// NewHandler creates a default handler for test and benchmark.
 func NewHandler() (soba.Handler, error) {
 	return soba.Create(&soba.Config{
 		Loggers: map[string]soba.ConfigLogger{},
@@ -74,7 +74,7 @@ func BenchmarkHandler_NewLogger(b *testing.B) {
 		}
 
 		// Store logger instance in a global variable so the compiler cannot eliminate the benchmark.
-		// It create a race conditions but it's okay since it's only a benchmark and not a unit test.
+		// It create a race conditions but it's okay since it's only a benchmark and not a test.
 		gl = l
 
 	})

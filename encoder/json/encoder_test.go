@@ -52,7 +52,7 @@ func BenchmarkJSON_NewEncoder(b *testing.B) {
 		}
 
 		// Store logger instance in a global variable so the compiler cannot eliminate the benchmark.
-		// It create a race conditions but it's okay since it's only a benchmark and not a unit test.
+		// It create a race conditions but it's okay since it's only a benchmark and not a test.
 		ge = e
 
 	})
