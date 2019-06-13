@@ -77,9 +77,6 @@ func (appender *ConsoleAppender) Write(entry *Entry) {
 	appender.mutex.Lock()
 	defer appender.mutex.Unlock()
 
-	// TODO: Should I handle the number of bytes written?
-	//       Can it be less than len(buffer)?
-	//       Investigation required!
 	_, err := appender.out.Write(buffer)
 	if err != nil {
 		// We choose to ignore the error if we cannot log it on stderr.
