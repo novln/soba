@@ -1,0 +1,5 @@
+# Ignore git folders
+.git
+
+# Ignore Dockerfile
+scripts/conf/go/Dockerfile
