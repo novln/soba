@@ -11,14 +11,17 @@ import (
 // DefaultConfigPath defines the default configuration path.
 const DefaultConfigPath = "soba.yml"
 
+// EnvConfigPath defines a configuration path defined by environment variables.
+const EnvConfigPath = "SOBA_CONF"
+
 // A Config describes a soba instance configuration.
 type Config struct {
 	// Root defines default logger configuration.
-	Root ConfigLogger
+	Root ConfigLogger `yaml:"root"`
 	// Appenders is a list of appenders definition.
-	Appenders map[string]ConfigAppender
+	Appenders map[string]ConfigAppender `yaml:"appenders"`
 	// Loggers is a list of loggers configuration.
-	Loggers map[string]ConfigLogger
+	Loggers map[string]ConfigLogger `yaml:"loggers"`
 	// verified defines if configuration has been validated.
 	verified bool
 }
@@ -39,17 +42,21 @@ func (conf *Config) IsAppenderExists(name string) bool {
 
 // A ConfigLogger describes a logger configuration.
 type ConfigLogger struct {
-	Level     string
-	Appenders []string
-	Additive  bool
+	Level     string   `yaml:"level"`
+	Appenders []string `yaml:"appenders"`
+	Additive  bool     `yaml:"additive"`
 }
 
 // A ConfigAppender describes an appender configuration.
 type ConfigAppender struct {
 	// Type defines an appender type. Could be "console" or "file".
-	Type string
+	Type string `yaml:"type"`
 	// Path defines the file path for a file appender.
-	Path string
+	Path string `yaml:"path"`
+	// MaxBytes defines the maximum file size in bytes for a file appender.
+	MaxBytes int64 `yaml:"max_bytes"`
+	// Backup enables to archive previous log file. It's only activated when MaxBytes is defined.
+	Backup bool `yaml:"backup"`
 }
 
 // CheckPath verifies that given path is valid.
@@ -109,6 +116,28 @@ func ValidateConfig(conf *Config) error {
 	return nil
 }
 
+// NewDefaultConfig returns a default configuration.
+func NewDefaultConfig() *Config {
+	name := "stdout"
+	return &Config{
+		// verified is set to false in case the configuration is mutated outside this package.
+		verified: false,
+		Loggers:  map[string]ConfigLogger{},
+		Appenders: map[string]ConfigAppender{
+			name: {
+				Type: ConsoleAppenderType,
+			},
+		},
+		Root: ConfigLogger{
+			Level:    InfoLevel.String(),
+			Additive: false,
+			Appenders: []string{
+				name,
+			},
+		},
+	}
+}
+
 func validateRootLoggerConfig(conf *Config) error {
 
 	conf.Root.Additive = false
@@ -156,22 +185,43 @@ func validateLoggersConfig(conf *Config) error {
 func validateAppendersConfig(conf *Config) error {
 
 	for name, appender := range conf.Appenders {
+		err := validateAppenderConfig(name, appender)
+		if err != nil {
+			return err
+		}
+	}
 
-		if !IsAppenderNameValid(name) {
-			return errors.Errorf("name is invalid for appender: %s", name)
+	return nil
+}
+
+func validateAppenderConfig(name string, conf ConfigAppender) error {
+
+	if !IsAppenderNameValid(name) {
+		return errors.Errorf("name is invalid for appender: %s", name)
+	}
+
+	switch conf.Type {
+	case ConsoleAppenderType:
+		if conf.Path != "" {
+			return errors.Errorf("path is not required for appender: %s", name)
+		}
+		if conf.Backup {
+			return errors.Errorf("backup is not required for appender: %s", name)
+		}
+		if conf.MaxBytes > 0 {
+			return errors.Errorf("max bytes is not required for appender: %s", name)
 		}
 
-		switch appender.Type {
-		case ConsoleAppenderType:
-
-		case FileAppenderType:
-			if appender.Path == "" {
-				return errors.Errorf("path is invalid for appender: %s", name)
-			}
-
-		default:
-			return errors.Errorf("type is invalid for appender: %s", name)
+	case FileAppenderType:
+		if conf.Path == "" {
+			return errors.Errorf("path is invalid for appender: %s", name)
 		}
+		if conf.MaxBytes < 0 {
+			return errors.Errorf("max bytes is invalid for appender: %s", name)
+		}
+
+	default:
+		return errors.Errorf("type is invalid for appender: %s", name)
 	}
 
 	return nil
