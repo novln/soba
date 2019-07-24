@@ -1,0 +1,6 @@
+appenders:
+  stdout:
+    type: console
+
+root:
+  level: warn

@@ -1,0 +1,20 @@
+appenders:
+  stdout:
+    type: console
+  requests:
+    type: file
+    path: "testdata/logs/requests.log"
+
+root:
+  level: warn
+  appenders:
+    - stdout
+
+loggers:
+  app.backend.db:
+    level: info
+  app.requests:
+    level: info
+    appenders:
+      - requests
+    additive: false

@@ -8,7 +8,11 @@
 *.test
 
 # Test directory
-/testdata/
+/testdata/coverage.out
+/testdata/logs/
+
+# Example directory
+/examples/logs/
 
 # Vendor directory
 /vendor/
