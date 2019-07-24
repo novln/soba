@@ -5,6 +5,17 @@ import (
 	"time"
 )
 
+const (
+	// LoggerKey is the json key used for the entry name.
+	LoggerKey = "logger"
+	// TimeKey is the json key used for the entry timestamp.
+	TimeKey = "time"
+	// LevelKey is the json key used for the entry level.
+	LevelKey = "level"
+	// MessageKey is the json key used for the entry message.
+	MessageKey = "message"
+)
+
 // Entry represents a log event.
 type Entry struct {
 	name    string
@@ -81,10 +92,10 @@ func NewEntry(name string, level Level, message string, fields ...[]Field) *Entr
 // WriteEntry writes entry informations on the given encoder.
 func WriteEntry(entry *Entry, encoder Encoder) []byte {
 	return encoder.Encode(func(encoder Encoder) {
-		encoder.AddString("logger", entry.name)
-		encoder.AddTime("time", time.Unix(entry.unix, 0).UTC())
-		encoder.AddStringer("level", entry.level)
-		encoder.AddString("message", entry.message)
+		encoder.AddString(LoggerKey, entry.name)
+		encoder.AddTime(TimeKey, time.Unix(entry.unix, 0).UTC())
+		encoder.AddStringer(LevelKey, entry.level)
+		encoder.AddString(MessageKey, entry.message)
 		for _, field := range entry.fields {
 			field.Write(encoder)
 		}
