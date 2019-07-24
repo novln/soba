@@ -16,9 +16,7 @@ jobs:
       - run:
           name: Run tests
           command: scripts/go-wrapper scripts/test
-          no_output_timeout: 10m
 
       - run:
           name: Run linters
           command: scripts/go-wrapper scripts/lint
-          no_output_timeout: 10m
