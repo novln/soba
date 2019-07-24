@@ -158,6 +158,8 @@ func TestLogger_New(t *testing.T) {
 // Test logger filters on debug level.
 func TestLogger_DebugLevel(t *testing.T) {
 	appender := NewTestAppender("foobar")
+	defer CloseAppender(t, appender)
+
 	logger := soba.NewLogger("foobar", soba.DebugLevel, []soba.Appender{appender})
 
 	logger.Debug("Debug level", soba.Int("idx", 1))
@@ -203,6 +205,8 @@ func TestLogger_DebugLevel(t *testing.T) {
 // Test logger filters on info level.
 func TestLogger_InfoLevel(t *testing.T) {
 	appender := NewTestAppender("foobar")
+	defer CloseAppender(t, appender)
+
 	logger := soba.NewLogger("foobar", soba.InfoLevel, []soba.Appender{appender})
 
 	logger.Debug("Debug level", soba.Int("idx", 1))
@@ -241,6 +245,8 @@ func TestLogger_InfoLevel(t *testing.T) {
 // Test logger filters on warning level.
 func TestLogger_WarnLevel(t *testing.T) {
 	appender := NewTestAppender("foobar")
+	defer CloseAppender(t, appender)
+
 	logger := soba.NewLogger("foobar", soba.WarnLevel, []soba.Appender{appender})
 
 	logger.Debug("Debug level", soba.Int("idx", 1))
@@ -272,6 +278,8 @@ func TestLogger_WarnLevel(t *testing.T) {
 // Test logger filters on error level.
 func TestLogger_ErrorLevel(t *testing.T) {
 	appender := NewTestAppender("foobar")
+	defer CloseAppender(t, appender)
+
 	logger := soba.NewLogger("foobar", soba.ErrorLevel, []soba.Appender{appender})
 
 	logger.Debug("Debug level", soba.Int("idx", 1))
@@ -296,6 +304,8 @@ func TestLogger_ErrorLevel(t *testing.T) {
 // Test logger filters on no level.
 func TestLogger_NoLevel(t *testing.T) {
 	appender := NewTestAppender("foobar")
+	defer CloseAppender(t, appender)
+
 	logger := soba.NewLogger("foobar", soba.NoLevel, []soba.Appender{appender})
 
 	logger.Debug("Debug level", soba.Int("idx", 1))
@@ -311,6 +321,8 @@ func TestLogger_NoLevel(t *testing.T) {
 // Test logger filters on unknown level should behave as no level.
 func TestLogger_UnknownLevel(t *testing.T) {
 	appender := NewTestAppender("foobar")
+	defer CloseAppender(t, appender)
+
 	logger := soba.NewLogger("foobar", soba.UnknownLevel, []soba.Appender{appender})
 
 	logger.Debug("Debug level", soba.Int("idx", 1))
@@ -326,6 +338,8 @@ func TestLogger_UnknownLevel(t *testing.T) {
 // Test logger with custom fields.
 func TestLogger_WithFields(t *testing.T) {
 	appender := NewTestAppender("foobar")
+	defer CloseAppender(t, appender)
+
 	logger := soba.NewLogger("foobar", soba.InfoLevel, []soba.Appender{appender})
 
 	logger = logger.With(soba.String("module", "xyz"), soba.Bool("shared", true))

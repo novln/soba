@@ -84,9 +84,16 @@ func BenchmarkHandler_NewLogger(b *testing.B) {
 // nolint: gocyclo
 func TestHandler_NewLogger(t *testing.T) {
 	apiAppender := NewTestAppender("api-log")
+	defer CloseAppender(t, apiAppender)
+
 	dbAppender := NewTestAppender("db-log")
+	defer CloseAppender(t, dbAppender)
+
 	authAppender := NewTestAppender("auth-log")
+	defer CloseAppender(t, authAppender)
+
 	stdoutAppender := NewTestAppender("stdout")
+	defer CloseAppender(t, stdoutAppender)
 
 	err := soba.RegisterAppenders(apiAppender, dbAppender, authAppender, stdoutAppender)
 	if err != nil {

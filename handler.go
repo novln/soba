@@ -60,9 +60,19 @@ func create(conf *Config) (*handler, error) {
 	return handler, nil
 }
 
+func closePreviousAppender(name string, handler *handler) {
+	// In case there is a duplication in appenders name, we close the previous one.
+	appender, ok := handler.appenders[name]
+	if ok && appender != nil {
+		// Silent the error.
+		_ = appender.Close()
+	}
+}
+
 func createAppenders(conf *Config, handler *handler) error {
 
 	for name := range conf.Appenders {
+		closePreviousAppender(name, handler)
 		appender, err := NewAppender(name, conf.Appenders[name])
 		if err != nil {
 			return err
@@ -74,6 +84,7 @@ func createAppenders(conf *Config, handler *handler) error {
 	defer plMutex.Unlock()
 
 	for name, appender := range plAppenders {
+		closePreviousAppender(name, handler)
 		handler.appenders[name] = appender
 	}
 
@@ -234,4 +245,17 @@ func (handler *handler) New(name string) Logger {
 	copy := val.(Logger).copyWithName(name)
 	val, _ = handler.loggers.LoadOrStore(name, copy)
 	return val.(Logger)
+}
+
+// Close recycles the handler appenders.
+// If case of one or multiple errors, we return the first one.
+func (handler *handler) Close() error {
+	var err error
+	for name, appender := range handler.appenders {
+		thr := appender.Close()
+		if thr != nil && err == nil {
+			err = errors.Wrapf(thr, "cannot close appender %s", name)
+		}
+	}
+	return err
 }
