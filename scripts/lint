@@ -9,9 +9,9 @@ if [[ ! -x "$(command -v go)" ]]; then
 fi
 
 GOPATH=$(go env GOPATH)
-golinter_path="${GOPATH}/bin/golangci-lint"
+linter_path="${GOPATH}/bin/golangci-lint"
 
-if [[ ! -x "${golinter_path}" ]]; then
+if [[ ! -x "${linter_path}" ]]; then
     cd "${GOPATH}"
     go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
 fi

@@ -1,4 +1,4 @@
-FROM golang:1.12.4-stretch
+FROM golang:1.12.7-stretch
 
 MAINTAINER thomas@leroux.io
 
@@ -18,4 +18,4 @@ COPY . /media/novln/soba
 WORKDIR /media/novln/soba
 RUN go mod download
 
-CMD /bin/bash
+CMD [ "/bin/bash" ]
