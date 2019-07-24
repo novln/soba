@@ -2,6 +2,7 @@ package soba_test
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"testing"
 
@@ -12,7 +13,7 @@ import (
 
 // NewHandler creates a default handler for test and benchmark.
 func NewHandler() (soba.Handler, error) {
-	return soba.Create(&soba.Config{
+	return soba.CreateWithConfig(&soba.Config{
 		Loggers: map[string]soba.ConfigLogger{},
 		Appenders: map[string]soba.ConfigAppender{
 			"stdout": {
@@ -78,6 +79,171 @@ func BenchmarkHandler_NewLogger(b *testing.B) {
 		gl = l
 
 	})
+
+	err = handler.Close()
+	if err != nil {
+		b.Fatal(err)
+	}
+}
+
+// Test creation of a new handler without context.
+// nolint: gocyclo
+func TestHandler_Create(t *testing.T) {
+	{
+		// Create a handler using "SOBA_CONF" environment variable with a valid file.
+		env := os.Getenv(soba.EnvConfigPath)
+
+		err := os.Setenv(soba.EnvConfigPath, "testdata/simple.yaml")
+		if err != nil {
+			t.Fatalf("Unexpected error: %+v", err)
+		}
+
+		handler, err := soba.Create()
+		if err != nil {
+			t.Fatalf("Unexpected error: %+v", err)
+		}
+		if handler == nil {
+			t.Fatal("A handler was expected")
+		}
+		err = handler.Close()
+		if err != nil {
+			t.Fatalf("Unexpected error: %+v", err)
+		}
+
+		err = os.Setenv(soba.EnvConfigPath, env)
+		if err != nil {
+			t.Fatalf("Unexpected error: %+v", err)
+		}
+	}
+	{
+		// Create a handler using "SOBA_CONF" environment variable with an invalid file.
+		env := os.Getenv(soba.EnvConfigPath)
+
+		err := os.Setenv(soba.EnvConfigPath, "config.go")
+		if err != nil {
+			t.Fatalf("Unexpected error: %+v", err)
+		}
+
+		handler, err := soba.Create()
+		if err == nil {
+			t.Fatalf("An error was expected")
+		}
+		if handler != nil {
+			t.Fatal("Unexpected handler")
+		}
+
+		err = os.Setenv(soba.EnvConfigPath, env)
+		if err != nil {
+			t.Fatalf("Unexpected error: %+v", err)
+		}
+	}
+	{
+		// Create a handler without "SOBA_CONF" environment variable and
+		// without a default configuration file.
+		env := os.Getenv(soba.EnvConfigPath)
+
+		err := os.Setenv(soba.EnvConfigPath, "")
+		if err != nil {
+			t.Fatalf("Unexpected error: %+v", err)
+		}
+
+		handler, err := soba.Create()
+		if err != nil {
+			t.Fatalf("Unexpected error: %+v", err)
+		}
+		if handler == nil {
+			t.Fatal("A handler was expected")
+		}
+		err = handler.Close()
+		if err != nil {
+			t.Fatalf("Unexpected error: %+v", err)
+		}
+
+		err = os.Setenv(soba.EnvConfigPath, env)
+		if err != nil {
+			t.Fatalf("Unexpected error: %+v", err)
+		}
+	}
+	{
+		// Create a handler with an invalid configuration file path.
+		handler, err := soba.CreateWithFile("foobar.yml")
+		if err == nil {
+			t.Fatalf("An error was expected")
+		}
+		if handler != nil {
+			t.Fatal("Unexpected handler")
+		}
+	}
+	{
+		// Create a handler with an invalid configuration file format.
+		handler, err := soba.CreateWithFile("config.go")
+		if err == nil {
+			t.Fatalf("An error was expected")
+		}
+		if handler != nil {
+			t.Fatal("Unexpected handler")
+		}
+	}
+	{
+		// Create a handler with a valid configuration file.
+		handler, err := soba.CreateWithFile("testdata/simple.yaml")
+		if err != nil {
+			t.Fatalf("Unexpected error: %+v", err)
+		}
+		if handler == nil {
+			t.Fatal("A handler was expected")
+		}
+		err = handler.Close()
+		if err != nil {
+			t.Fatalf("Unexpected error: %+v", err)
+		}
+	}
+	{
+		// Create a handler with a wrong configuration.
+		handler, err := soba.CreateWithConfig(&soba.Config{
+			Root: soba.ConfigLogger{
+				Level:    "info",
+				Additive: false,
+				Appenders: []string{
+					"stdout",
+				},
+			},
+		})
+		if err == nil {
+			t.Fatalf("An error was expected")
+		}
+		if handler != nil {
+			t.Fatal("Unexpected handler")
+		}
+	}
+	{
+		// Create a handler with a correct configuration.
+		handler, err := soba.CreateWithConfig(&soba.Config{
+			Root: soba.ConfigLogger{
+				Level:    "info",
+				Additive: false,
+				Appenders: []string{
+					"stdout",
+				},
+			},
+			Loggers: map[string]soba.ConfigLogger{},
+			Appenders: map[string]soba.ConfigAppender{
+				"stdout": {
+					Type: "console",
+				},
+			},
+		})
+		if err != nil {
+			t.Fatalf("Unexpected error: %+v", err)
+		}
+		if handler == nil {
+			t.Fatal("A handler was expected")
+		}
+		err = handler.Close()
+		if err != nil {
+			t.Fatalf("Unexpected error: %+v", err)
+		}
+	}
 }
 
 // Test hierarchy of loggers.
@@ -100,7 +266,7 @@ func TestHandler_NewLogger(t *testing.T) {
 		t.Fatalf("Unexpected error: %+v", err)
 	}
 
-	handler, err := soba.Create(&soba.Config{
+	handler, err := soba.CreateWithConfig(&soba.Config{
 		Root: soba.ConfigLogger{
 			Level:    "info",
 			Additive: false,
@@ -114,7 +280,7 @@ func TestHandler_NewLogger(t *testing.T) {
 			},
 			"file-log": {
 				Type: soba.FileAppenderType,
-				Path: "/var/lib/soba/file.log",
+				Path: "testdata/logs/file.log",
 			},
 		},
 		Loggers: map[string]soba.ConfigLogger{
@@ -155,7 +321,7 @@ func TestHandler_NewLogger(t *testing.T) {
 			},
 			"pkg.proxy": {
 				Level:     "debug",
-				Additive:  true,
+				Additive:  false,
 				Appenders: []string{},
 			},
 		},
@@ -605,4 +771,24 @@ func TestHandler_NewLogger(t *testing.T) {
 
 	}
 
+	//
+	// Testing invalid logger
+	//
+	{
+		doPanic := func() {
+			defer func() {
+				thr := recover()
+				if thr == nil {
+					t.Fatal("A panic error was expected")
+				}
+			}()
+			handler.New("ServicesWebhooks").Info("Webhook received")
+		}
+		defer doPanic()
+	}
+
+	err = handler.Close()
+	if err != nil {
+		t.Fatalf("Unexpected error: %+v", err)
+	}
 }

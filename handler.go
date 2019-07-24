@@ -1,6 +1,8 @@
 package soba
 
 import (
+	"fmt"
+	"os"
 	"strings"
 	"sync"
 
@@ -12,12 +14,46 @@ import (
 type Handler interface {
 	// New creates a new Logger using given name.
 	New(name string) Logger
+	// Close recycles the handler appenders.
+	Close() error
 }
 
 // Create provides an alternative way to obtain loggers if the context based approach doesn't
-// fit your requirements. It will creates a new handler using given configuration.
-func Create(conf *Config) (Handler, error) {
+// fit your requirements.
+//
+// It relies on conventions and default configurations:
+//  - First, it will lookup from environment variable if a configuration path is defined.
+//  - Then, it will lookup from current directory if a configuration file exists.
+//  - Finally, it will create a new instance with default configurations.
+//
+// For specific configurations, please uses either CreateWithConfig or CreateWithFile.
+func Create() (Handler, error) {
+	path := os.Getenv(EnvConfigPath)
+	if path != "" && CheckPath(path) {
+		return CreateWithFile(path)
+	}
 
+	if CheckPath(DefaultConfigPath) {
+		return CreateWithFile(DefaultConfigPath)
+	}
+
+	return CreateWithConfig(NewDefaultConfig())
+}
+
+// CreateWithFile provides an alternative way to obtain loggers if the context based approach doesn't
+// fit your requirements. It will creates a new handler using given file path.
+func CreateWithFile(path string) (Handler, error) {
+	conf, err := ParseConfig(path)
+	if err != nil {
+		return nil, err
+	}
+
+	return create(conf)
+}
+
+// CreateWithConfig provides an alternative way to obtain loggers if the context based approach doesn't
+// fit your requirements. It will creates a new handler using given configuration.
+func CreateWithConfig(conf *Config) (Handler, error) {
 	err := ValidateConfig(conf)
 	if err != nil {
 		return nil, errors.Wrap(err, "configuration is invalid")
@@ -175,7 +211,7 @@ func getAppendersForChildLogger(conf *Config, handler *handler, name string) ([]
 		return nil, err
 	}
 
-	if conf.Loggers[name].Additive {
+	if isChildLoggerAdditive(conf, name, appenders) {
 		hierarchy := strings.Split(name, ".")
 		err = getParentAppendersForLogger(conf, handler, hierarchy, appenders)
 		if err != nil {
@@ -189,6 +225,26 @@ func getAppendersForChildLogger(conf *Config, handler *handler, name string) ([]
 	}
 
 	return list, nil
+}
+
+func isChildLoggerAdditive(conf *Config, name string, appenders map[string]Appender) bool {
+	// If logger is defined as additive, then it is.
+	if conf.Loggers[name].Additive {
+		return true
+	}
+
+	// If logger is defined as disabled, it's not additive.
+	level, ok := ParseLevel(conf.Loggers[name].Level)
+	if ok && level == NoLevel {
+		return false
+	}
+
+	// If there is no appender defined and the logger is not disabled, use the parent appenders as default.
+	if len(appenders) == 0 {
+		return true
+	}
+
+	return false
 }
 
 func createChildLoggers(conf *Config, handler *handler) error {
@@ -213,6 +269,9 @@ func createChildLoggers(conf *Config, handler *handler) error {
 }
 
 func (handler *handler) New(name string) Logger {
+	if !IsLoggerNameValid(name) {
+		panic(fmt.Sprintf("soba: invalid logger name format: %s", name))
+	}
 
 	// First, try to find the logger identified by given name.
 	val, ok := handler.loggers.Load(name)

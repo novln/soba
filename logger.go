@@ -20,12 +20,13 @@ type Logger struct {
 
 // New creates a new Logger using given name.
 func New(ctx context.Context, name string) Logger {
-	if !IsLoggerNameValid(name) {
-		panic(fmt.Sprintf("soba: invalid logger name format: %s", name))
+	val := ctx.Value(hCtxKey)
+	if val == nil {
+		panic("soba: must be initialized with soba.Load()")
 	}
 
-	handler := ctx.Value(hCtxKey).(Handler)
-	if handler == nil {
+	handler, ok := val.(Handler)
+	if !ok {
 		panic("soba: must be initialized with soba.Load()")
 	}
 
