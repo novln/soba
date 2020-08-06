@@ -29,6 +29,8 @@ github.com/valyala/fastjson v1.5.1 h1:SXaQZVSwLjZOVhDEhjiCcDtnX0Feu7Z7A1+C5atpoH
 github.com/valyala/fastjson v1.5.1/go.mod h1:CLCAqky6SMuOcxStkYQvblddUtoRxhYMGLrsQns1aXY=
 github.com/valyala/fastjson v1.5.3 h1:z4Z1Bll4WaXo+FXJoiCdW8ss7sKY2d/jYfE2ZzoT284=
 github.com/valyala/fastjson v1.5.3/go.mod h1:CLCAqky6SMuOcxStkYQvblddUtoRxhYMGLrsQns1aXY=
+github.com/valyala/fastjson v1.5.4 h1:r8gpiVwdzDU09NrlN38OyL5dUFpdwGQR5RQEBqY+hLg=
+github.com/valyala/fastjson v1.5.4/go.mod h1:CLCAqky6SMuOcxStkYQvblddUtoRxhYMGLrsQns1aXY=
 github.com/zchee/color v1.7.0 h1:kwfQtHW3BemUhhyG6Oz6UJMyvUqK2nHHzmLJ0Obx4QU=
 github.com/zchee/color v1.7.0/go.mod h1:FSz74dOaUELpDBMNTUSViUIXkK0pjCQFlguS1+8x80c=
 golang.org/x/sys v0.0.0-20190222072716-a9d3bda3a223 h1:DH4skfRX4EBpamg7iV4ZlCpblAHI6s6TDM39bFZumv8=
