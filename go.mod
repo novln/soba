@@ -2,7 +2,7 @@ module github.com/novln/soba
 
 require (
 	github.com/Pallinder/go-randomdata v1.2.0
-	github.com/jawher/mow.cli v1.1.0
+	github.com/jawher/mow.cli v1.2.0
 	github.com/mattn/go-colorable v0.1.2 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/valyala/fastjson v1.6.3
