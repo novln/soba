@@ -8,4 +8,4 @@ updates:
     assignees:
       - "novln"
     commit-message:
-        prefix: "chore(gomod):"
+        prefix: "chore(go.mod):"
