@@ -8,5 +8,5 @@ require (
 	github.com/valyala/fastjson v1.6.3
 	github.com/zchee/color v1.7.0
 	golang.org/x/text v0.3.2 // indirect
-	gopkg.in/yaml.v2 v2.3.0
+	gopkg.in/yaml.v2 v2.4.0
 )
